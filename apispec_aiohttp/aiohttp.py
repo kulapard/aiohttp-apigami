@@ -9,11 +9,12 @@ from typing import Any
 import marshmallow
 from aiohttp import web
 from aiohttp.hdrs import METH_ALL, METH_ANY
+from aiohttp.helpers import AppKey
 from apispec import APISpec
 from apispec.core import VALID_METHODS_OPENAPI_V2
 from apispec.ext.marshmallow import MarshmallowPlugin, common
 from jinja2 import Template
-from webargs.aiohttpparser import parser
+from webargs.aiohttpparser import AIOHTTPParser, parser
 
 from .utils import get_path, get_path_keys, issubclass_py37fix
 
@@ -31,6 +32,13 @@ NAME_SWAGGER_STATIC = "swagger.static"
 
 SWAGGER_UI_STATIC_FILES = Path(__file__).parent / "swagger_ui"
 INDEX_PAGE = "index.html"
+
+APISPEC_REQUEST_DATA_NAME = AppKey("_apispec_request_data_name", str)
+APISPEC_PARSER = AppKey("_apispec_parser", AIOHTTPParser)
+
+# TODO: make it AppKey in 1.x release
+# Leave as a string for backward compatibility with 0.x
+SWAGGER_DICT = "swagger_dict"
 
 
 def resolver(schema: _SchemaType) -> str:
@@ -99,11 +107,11 @@ class AiohttpApiSpec:
         if self._registered is True:
             return None
 
-        app["_apispec_request_data_name"] = self._request_data_name
+        app[APISPEC_REQUEST_DATA_NAME] = self._request_data_name
 
         if self.error_callback:
             parser.error_callback = self.error_callback
-        app["_apispec_parser"] = parser
+        app[APISPEC_PARSER] = parser
 
         if in_place:
             self._register(app)
@@ -119,7 +127,7 @@ class AiohttpApiSpec:
         if self.url is not None:
 
             async def swagger_handler(request: web.Request) -> web.Response:
-                return web.json_response(request.app["swagger_dict"])
+                return web.json_response(request.app[SWAGGER_DICT])
 
             route_url = self.url
             if not self.url.startswith("/"):
@@ -173,7 +181,7 @@ class AiohttpApiSpec:
                 method = route.method.lower()
                 view = route.handler
                 self._register_route(route, method, view)
-        app["swagger_dict"] = self.swagger_dict()
+        app[SWAGGER_DICT] = self.swagger_dict()
 
     def _register_route(self, route: web.AbstractRoute, method: str, view: _AiohttpView) -> None:
         if not hasattr(view, "__apispec__"):
