@@ -29,6 +29,7 @@ NAME_SWAGGER_SPEC = "swagger.spec"
 NAME_SWAGGER_DOCS = "swagger.docs"
 NAME_SWAGGER_STATIC = "swagger.static"
 
+SWAGGER_UI_STATIC_FILES = Path(__file__).parent / "swagger_ui"
 INDEX_PAGE = "index.html"
 
 
@@ -152,11 +153,10 @@ class AiohttpApiSpec:
         return self._index_page
 
     def _add_swagger_web_page(self, app: web.Application, static_path: str, view_path: str) -> None:
-        static_files = Path(__file__).parent / "swagger_ui"
-        app.router.add_static(static_path, static_files, name=NAME_SWAGGER_STATIC)
+        app.router.add_static(static_path, SWAGGER_UI_STATIC_FILES, name=NAME_SWAGGER_STATIC)
 
         async def swagger_view(_: web.Request) -> web.Response:
-            index_page = self._get_index_page(app, static_files, static_path)
+            index_page = self._get_index_page(app, SWAGGER_UI_STATIC_FILES, static_path)
             return web.Response(text=index_page, content_type="text/html")
 
         app.router.add_route("GET", view_path, swagger_view, name=NAME_SWAGGER_DOCS)
