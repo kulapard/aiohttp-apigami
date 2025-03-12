@@ -1,6 +1,7 @@
 from aiohttp import web
 from aiohttp.typedefs import Handler
 
+from .aiohttp import APISPEC_PARSER, APISPEC_REQUEST_DATA_NAME
 from .utils import issubclass_py37fix
 
 
@@ -31,7 +32,7 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
         schemas = orig_handler.__schemas__
     result = []
     for schema in schemas:
-        data = await request.app["_apispec_parser"].parse(
+        data = await request.app[APISPEC_PARSER].parse(
             schema["schema"],
             request,
             location=schema["location"],
@@ -48,5 +49,5 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
             except (ValueError, TypeError):
                 result = data
                 break
-    request[request.app["_apispec_request_data_name"]] = result
+    request[request.app[APISPEC_REQUEST_DATA_NAME]] = result
     return await handler(request)
