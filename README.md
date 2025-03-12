@@ -7,7 +7,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kulapard/apispec-aiohttp/blob/master/LICENSE)
 ---
 
-Build and document REST APIs with [aiohttp](https://github.com/aio-libs/aiohttp) and [apispec](https://github.com/marshmallow-code/apispec)
+API documentation and validation for [aiohttp](https://github.com/aio-libs/aiohttp) using [apispec](https://github.com/marshmallow-code/apispec)
 
 **apispec-aiohttp** key features:
 - `docs` and `request_schema` decorators to add Swagger/OpenAPI spec support out of the box
