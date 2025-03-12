@@ -1,31 +1,24 @@
-<h1 align="center">apispec-aiohttp</h1>
-<p align="center">Build and document REST APIs with <a href="https://github.com/aio-libs/aiohttp">aiohttp</a> and <a href="https://github.com/marshmallow-code/apispec">apispec</a></p>
+# apispec-aiohttp
 
-<p align="center">
-  <a href="https://pypi.python.org/pypi/apispec-aiohttp"><img src="https://badge.fury.io/py/apispec-aiohttp.svg" alt="Pypi"></a>
-  <a href="https://github.com/kulapard/apispec-aiohttp/graphs/contributors"><img src="https://img.shields.io/github/contributors/kulapard/apispec-aiohttp.svg" alt="Contributors"></a>
-  <a href="https://pepy.tech/project/apispec-aiohttp"><img src="https://pepy.tech/badge/apispec-aiohttp" alt="Downloads"></a>
-</p>
+[![Build Status](https://github.com/kulapard/apispec-aiohttp/actions/workflows/ci.yml/badge.svg)](https://github.com/kulapard/apispec-aiohttp/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/kulapard/apispec-aiohttp/graph/badge.svg?token=Y5EJBF1F25)](https://codecov.io/github/kulapard/apispec-aiohttp)
+[![PyPI - Version](https://img.shields.io/pypi/v/apispec-aiohttp?color=%2334D058&label=pypi%20package)](https://pypi.org/project/apispec-aiohttp)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apispec-aiohttp)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kulapard/apispec-aiohttp/blob/master/LICENSE)
+---
 
-<p align="center">
-  <a href="https://app.travis-ci.com/github/kulapard/apispec-aiohttp"><img src="https://app.travis-ci.com/kulapard/apispec-aiohttp.svg?branch=master" alt="build status"></a>
-  <a href="https://apispec-aiohttp.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/apispec-aiohttp/badge/?version=latest" alt="[docs]"></a>
-  <a href="https://codecov.io/gh/kulapard/apispec-aiohttp"><img src="https://codecov.io/gh/kulapard/apispec-aiohttp/branch/master/graph/badge.svg" alt="[codcov]"></a>
-  <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
-</p>
-
-<p>
+Build and document REST APIs with [aiohttp](https://github.com/aio-libs/aiohttp) and [apispec](https://github.com/marshmallow-code/apispec)
 
 ```apispec-aiohttp``` key features:
 - ```docs``` and ```request_schema``` decorators
 to add swagger spec support out of the box;
-- ```validation_middleware``` middleware to enable validating
-with marshmallow schemas from those decorators;
-- **SwaggerUI** support.
-- *New from version 2.0* -  ```match_info_schema```, ```querystring_schema```,
+- ```match_info_schema```, ```querystring_schema```,
 ```form_schema```, ```json_schema```, ```headers_schema``` and ```cookies_schema```
 decorators for specific request parts validation.
 Look [here](#more-decorators) for more info.
+- ```validation_middleware``` middleware to enable validating
+with marshmallow schemas from those decorators;
+- **SwaggerUI** support.
 
 ```apispec-aiohttp``` api is based on ```aiohttp-apispec``` (seems abandoned) which is fully inspired by ```flask-apispec``` library
 
@@ -324,10 +317,11 @@ def create_app(app):
     return app
 ```
 
-## Versioning
+## Support
 
-This software follows [Semantic Versioning](http://semver.org/).
-
-------
-
+If you encounter any issues or have suggestions for improvements, please open an issue in this GitHub repository.
 Please star this repository if this project helped you!
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
