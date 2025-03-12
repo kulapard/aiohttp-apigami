@@ -9,9 +9,9 @@ from .utils import issubclass_py37fix
 _Schema = dict[str, str]
 
 
-def _get_schemas(request: web.Request) -> list[HandlerSchema] | None:
+def _get_handler_schemas(request: web.Request) -> list[HandlerSchema] | None:
     """
-    Get schemas from handler
+    Get schemas from the request handler
     """
     handler = request.match_info.handler
 
@@ -51,19 +51,19 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
 
 
     """
-    schemas = _get_schemas(request)
+    schemas = _get_handler_schemas(request)
     if schemas is None:
         # Skip validation if no schemas are found
         return await handler(request)
 
     result = []
-    for schema_config in schemas:
+    for sch in schemas:
         # Parse and validate request data using the schema
-        data = await _get_validated_data(request, schema_config)
+        data = await _get_validated_data(request, sch)
 
         # If put_into is specified, store the validated data in a specific key
-        if schema_config.put_into:
-            request[schema_config.put_into] = data
+        if sch.put_into:
+            request[sch.put_into] = data
 
         # Otherwise, store the validated data in the default key
         elif data:
