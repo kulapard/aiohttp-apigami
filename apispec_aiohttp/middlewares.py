@@ -9,15 +9,17 @@ from .utils import issubclass_py37fix
 _Schema = dict[str, str]
 
 
-def _get_schemas(handler: Handler) -> list[HandlerSchema] | None:
+def _get_schemas(request: web.Request) -> list[HandlerSchema] | None:
     """
     Get schemas from handler
     """
+    handler = request.match_info.handler
+
     if hasattr(handler, "__schemas__"):
         return cast(list[HandlerSchema], handler.__schemas__)
 
     if issubclass_py37fix(handler, web.View):
-        sub_handler = getattr(handler, "get", None)
+        sub_handler = getattr(handler, request.method.lower(), None)
         if sub_handler and hasattr(sub_handler, "__schemas__"):
             return cast(list[HandlerSchema], sub_handler.__schemas__)
 
@@ -49,8 +51,7 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
 
 
     """
-    orig_handler = request.match_info.handler
-    schemas = _get_schemas(orig_handler)
+    schemas = _get_schemas(request)
     if schemas is None:
         # Skip validation if no schemas are found
         return await handler(request)
