@@ -54,12 +54,19 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Run test
-        run: uv run pytest --cov-branch --cov-report=xml
+        run: uv run pytest --cov-branch --junitxml=junit.xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
 
   # https://github.com/marketplace/actions/alls-green#why
   check: # This job does nothing and is only used for the branch protection

@@ -12,11 +12,6 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-
       - uses: actions/checkout@v4
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v5
@@ -27,10 +22,3 @@ jobs:
           uv build --verbose
       - name: Publish
         uses: pypa/gh-action-pypi-publish@v1.12.4
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
