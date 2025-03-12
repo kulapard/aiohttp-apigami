@@ -6,6 +6,7 @@ from aiohttp.typedefs import Handler
 from marshmallow import Schema, fields
 
 from apispec_aiohttp import docs, request_schema, response_schema
+from apispec_aiohttp.aiohttp import HandlerSchema
 
 
 class RequestSchema(Schema):
@@ -92,12 +93,16 @@ class TestViewDecorators:
     def test_request_schema_view(self, aiohttp_view_kwargs: Handler) -> None:
         assert hasattr(aiohttp_view_kwargs, "__apispec__")
         assert hasattr(aiohttp_view_kwargs, "__schemas__")
-        assert isinstance(aiohttp_view_kwargs.__schemas__[0].pop("schema"), RequestSchema)
-        assert aiohttp_view_kwargs.__schemas__ == [{"location": "querystring", "put_into": None}]
+        assert len(aiohttp_view_kwargs.__schemas__) == 1
+        schema = aiohttp_view_kwargs.__schemas__[0]
+        assert isinstance(schema, HandlerSchema)
+        assert isinstance(schema.schema, RequestSchema)
+        assert schema.location == "querystring"
+        assert schema.put_into is None
         for param in ("parameters", "responses"):
             assert param in aiohttp_view_kwargs.__apispec__
 
-    @pytest.mark.skip
+    @pytest.mark.skip(reason="__apispec__ is not filled before starting the aiohttp server")
     def test_request_schema_parameters(self, aiohttp_view_kwargs: Handler) -> None:
         assert hasattr(aiohttp_view_kwargs, "__apispec__")
         parameters = aiohttp_view_kwargs.__apispec__["parameters"]

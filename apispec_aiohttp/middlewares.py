@@ -1,8 +1,39 @@
+from typing import Any, cast
+
 from aiohttp import web
 from aiohttp.typedefs import Handler
 
-from .aiohttp import APISPEC_PARSER, APISPEC_REQUEST_DATA_NAME
+from .aiohttp import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, HandlerSchema
 from .utils import issubclass_py37fix
+
+
+def _get_handler_schemas(request: web.Request) -> list[HandlerSchema] | None:
+    """
+    Get schemas from the request handler
+    """
+    handler = request.match_info.handler
+
+    if hasattr(handler, "__schemas__"):
+        return cast(list[HandlerSchema], handler.__schemas__)
+
+    if issubclass_py37fix(handler, web.View):
+        sub_handler = getattr(handler, request.method.lower(), None)
+        if sub_handler and hasattr(sub_handler, "__schemas__"):
+            return cast(list[HandlerSchema], sub_handler.__schemas__)
+
+    return None
+
+
+async def _get_validated_data(request: web.Request, schema: HandlerSchema) -> Any | None:
+    """
+    Parse and validate request data using the schema
+    """
+    return await request.app[APISPEC_PARSER].parse(
+        schema.schema,
+        request,
+        location=schema.location,
+        unknown=None,  # Pass None to use the schema`s setting instead.
+    )
 
 
 @web.middleware
@@ -18,30 +49,24 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
 
 
     """
-    orig_handler = request.match_info.handler
-    if not hasattr(orig_handler, "__schemas__"):
-        if not issubclass_py37fix(orig_handler, web.View):
-            return await handler(request)
-        sub_handler = getattr(orig_handler, request.method.lower(), None)
-        if sub_handler is None:
-            return await handler(request)
-        if not hasattr(sub_handler, "__schemas__"):
-            return await handler(request)
-        schemas = sub_handler.__schemas__
-    else:
-        schemas = orig_handler.__schemas__
+    schemas = _get_handler_schemas(request)
+    if schemas is None:
+        # Skip validation if no schemas are found
+        return await handler(request)
+
     result = []
-    for schema in schemas:
-        data = await request.app[APISPEC_PARSER].parse(
-            schema["schema"],
-            request,
-            location=schema["location"],
-            unknown=None,  # Pass None to use the schema`s setting instead.
-        )
-        if schema["put_into"]:
-            request[schema["put_into"]] = data
+    for sch in schemas:
+        # Parse and validate request data using the schema
+        data = await _get_validated_data(request, sch)
+
+        # If put_into is specified, store the validated data in a specific key
+        if sch.put_into:
+            request[sch.put_into] = data
+
+        # Otherwise, store the validated data in the default key
         elif data:
             try:
+                # TODO: refactor to avoid mixing data from different schemas
                 if isinstance(data, list):
                     result.extend(data)
                 else:
@@ -49,5 +74,7 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
             except (ValueError, TypeError):
                 result = data
                 break
-    request[request.app[APISPEC_REQUEST_DATA_NAME]] = result
+
+    # Store validated data in request object
+    request[request.app[APISPEC_VALIDATED_DATA_NAME]] = result
     return await handler(request)

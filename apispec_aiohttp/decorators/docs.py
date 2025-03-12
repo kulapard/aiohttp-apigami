@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from typing import Any, TypeVar
 
+from apispec_aiohttp.aiohttp import HandlerSchema
 from apispec_aiohttp.typedefs import HandlerType
 
 T = TypeVar("T", bound=HandlerType)
@@ -35,9 +36,11 @@ def docs(**kwargs: Any) -> Callable[[T], T]:
     def wrapper(func: T) -> T:
         if not kwargs.get("produces"):
             kwargs["produces"] = ["application/json"]
+
         if not hasattr(func, "__apispec__"):
             func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore
-            func.__schemas__ = []  # type: ignore
+            func.__schemas__: list[HandlerSchema] = []  # type: ignore
+
         extra_parameters = kwargs.pop("parameters", [])
         extra_responses = kwargs.pop("responses", {})
         func.__apispec__["parameters"].extend(extra_parameters)  # type: ignore
