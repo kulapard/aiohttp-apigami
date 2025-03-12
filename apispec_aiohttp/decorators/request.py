@@ -3,8 +3,9 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any, Literal, TypeVar
 
-import marshmallow as m
+import marshmallow as ma
 
+from apispec_aiohttp.aiohttp import HandlerSchema
 from apispec_aiohttp.typedefs import HandlerType
 
 # Locations supported by both openapi and webargs.aiohttpparser
@@ -36,7 +37,7 @@ T = TypeVar("T", bound=HandlerType)
 
 
 def request_schema(
-    schema: m.Schema | type[m.Schema],
+    schema: ma.Schema | type[ma.Schema],
     location: ValidLocations = "json",
     put_into: str | None = None,
     example: dict[str, Any] | None = None,
@@ -83,7 +84,7 @@ def request_schema(
     if location not in VALID_SCHEMA_LOCATIONS:
         raise ValueError(f"Invalid location argument: {location}")
 
-    schema_instance: m.Schema
+    schema_instance: ma.Schema
     if callable(schema):
         schema_instance = schema()
     else:
@@ -93,12 +94,15 @@ def request_schema(
 
     def wrapper(func: T) -> T:
         if not hasattr(func, "__apispec__"):
-            func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore
-            func.__schemas__ = []  # type: ignore
+            func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore[attr-defined]
+            func.__schemas__: list[HandlerSchema] = []  # type: ignore
+
+        func_schemas: list[HandlerSchema] = func.__schemas__  # type: ignore
 
         _example = copy.copy(example) or {}
         if _example:
             _example["add_to_refs"] = add_to_refs
+
         func.__apispec__["schemas"].append(  # type: ignore
             {
                 "schema": schema_instance,
@@ -108,16 +112,16 @@ def request_schema(
             }
         )
 
-        # TODO: Remove this block?
-        # "body" location was replaced by "json" location
-        if location == "json" and any(
-            func_schema["location"] == "json"
-            for func_schema in func.__schemas__  # type: ignore
-        ):
+        # TODO: raise error if same location is used multiple times (no only for json)
+        if location == "json" and any(sch.location == "json" for sch in func_schemas):
             raise RuntimeError("Multiple json locations are not allowed")
 
-        func.__schemas__.append(  # type: ignore
-            {"schema": schema_instance, "location": location, "put_into": put_into}
+        func_schemas.append(
+            HandlerSchema(
+                schema=schema_instance,
+                location=location,
+                put_into=put_into,
+            )
         )
 
         return func

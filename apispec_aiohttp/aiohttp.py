@@ -3,10 +3,11 @@ import enum
 import json
 import os
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import marshmallow
+import marshmallow as ma
 from aiohttp import web
 from aiohttp.hdrs import METH_ALL, METH_ANY
 from aiohttp.helpers import AppKey
@@ -19,8 +20,8 @@ from webargs.aiohttpparser import AIOHTTPParser, parser
 from .utils import get_path, get_path_keys, issubclass_py37fix
 
 _AiohttpView = Callable[[web.Request], Awaitable[web.StreamResponse]]
-_SchemaType = type[marshmallow.Schema] | marshmallow.Schema | str
-_SchemaNameResolver = Callable[[type[marshmallow.Schema]], str]
+_SchemaType = type[ma.Schema] | ma.Schema | str
+_SchemaNameResolver = Callable[[type[ma.Schema]], str]
 
 VALID_RESPONSE_FIELDS = {"description", "headers", "examples"}
 
@@ -33,12 +34,19 @@ NAME_SWAGGER_STATIC = "swagger.static"
 SWAGGER_UI_STATIC_FILES = Path(__file__).parent / "swagger_ui"
 INDEX_PAGE = "index.html"
 
-APISPEC_REQUEST_DATA_NAME = AppKey("_apispec_request_data_name", str)
+APISPEC_VALIDATED_DATA_NAME = AppKey("_apispec_validated_data_name", str)
 APISPEC_PARSER = AppKey("_apispec_parser", AIOHTTPParser)
 
 # TODO: make it AppKey in 1.x release
 # Leave as a string for backward compatibility with 0.x
 SWAGGER_DICT = "swagger_dict"
+
+
+@dataclass
+class HandlerSchema:
+    schema: ma.Schema
+    location: str
+    put_into: str | None = None
 
 
 def resolver(schema: _SchemaType) -> str:
@@ -107,7 +115,7 @@ class AiohttpApiSpec:
         if self._registered is True:
             return None
 
-        app[APISPEC_REQUEST_DATA_NAME] = self._request_data_name
+        app[APISPEC_VALIDATED_DATA_NAME] = self._request_data_name
 
         if self.error_callback:
             parser.error_callback = self.error_callback
