@@ -1,0 +1,14 @@
+include LICENSE
+include README.md
+recursive-include apispec_aiohttp/static *
+graft apispec_aiohttp
+graft docs
+global-exclude *.pyc
+global-exclude *.pyd
+global-exclude *.so
+global-exclude *.lib
+global-exclude *.dll
+global-exclude *.a
+global-exclude *.obj
+prune docs/_build
+prune example

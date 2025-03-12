@@ -1,0 +1,23 @@
+version: 2
+
+enable-beta-ecosystems: true # Enable beta ecosystems to use `uv`
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+
+  # Experimental configuration
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10

@@ -1,0 +1,75 @@
+[build-system]
+requires = ["hatchling>=1.27.0,<2.0.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apispec-aiohttp"
+version = "0.1.0"
+description = "Build and document REST APIs with aiohttp and apispec"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Taras Drapalyuk", email = "taras@drapalyuk.com"}
+]
+keywords = ["aiohttp", "marshmallow", "apispec", "swagger"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "aiohttp>=3.0.1,<4.0",
+    "apispec>=5.0.1,<7.0.0",
+    "webargs>=8.0.1,<9.0.0",
+    "jinja2>=3.0.1,<4.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "codecov>=2.1.13",
+    "marshmallow>=3.0.1,<4.0.0",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "pytest-aiohttp",
+    "pytest-cov",
+    "pytest-sugar",
+]
+
+[project.urls]
+Homepage = "https://github.com/kulapard/apispec-aiohttp"
+Issues = "https://github.com/kulapard/apispec-aiohttp/issues"
+
+[tool.mypy]
+strict = true
+install_types = true
+non_interactive = true
+
+[tool.ruff]
+line-length = 120
+unsafe-fixes = true
+
+[tool.ruff.lint]
+select = [
+    "RUF", # ruff
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
+    "G", # flake8-logging-format
+    "T20", # flake8-print
+    "UP", # pyupgrade
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-v --cov=apispec_aiohttp"
