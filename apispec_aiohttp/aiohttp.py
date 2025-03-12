@@ -152,7 +152,7 @@ class AiohttpApiSpec:
         return self._index_page
 
     def _add_swagger_web_page(self, app: web.Application, static_path: str, view_path: str) -> None:
-        static_files = Path(__file__).parent / "static"
+        static_files = Path(__file__).parent / "swagger_ui"
         app.router.add_static(static_path, static_files, name=NAME_SWAGGER_STATIC)
 
         async def swagger_view(_: web.Request) -> web.Response:
