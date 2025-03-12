@@ -12,7 +12,7 @@ ResponsesSpec = dict[int, ResponseSpec]
 TagType = str
 
 
-def docs(
+def docs(  # noqa: C901
     *,
     tags: list[TagType] | None = None,
     summary: str | None = None,
@@ -22,10 +22,12 @@ def docs(
     produces: list[str] | None = None,
     consumes: list[str] | None = None,
     deprecated: bool | None = None,
+    operation_id: str | None = None,
+    security: list[dict[str, list[str]]] | None = None,
     **custom_attrs: Any,
 ) -> Callable[[T], T]:
     """
-    Annotate the decorated function with the specified OpenAPI/Swagger attributes.
+    Annotate the decorated view function with the specified OpenAPI/Swagger attributes.
 
     Args:
         tags: A list of tags for API operation categorization
@@ -36,6 +38,8 @@ def docs(
         produces: A list of MIME types the operation can produce
         consumes: A list of MIME types the operation can consume
         deprecated: Declares this operation to be deprecated
+        operation_id: A unique string used to identify the operation
+        security: A declaration of which security mechanisms can be used for this operation
         **custom_attrs: Any additional OpenAPI attributes to apply
 
     Usage:
@@ -69,6 +73,10 @@ def docs(
         kwargs["description"] = description
     if deprecated is not None:
         kwargs["deprecated"] = deprecated
+    if operation_id is not None:
+        kwargs["operationId"] = operation_id
+    if security is not None:
+        kwargs["security"] = security
     if consumes is not None:
         kwargs["consumes"] = consumes
     if produces is not None:
