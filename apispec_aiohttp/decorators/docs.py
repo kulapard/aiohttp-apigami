@@ -12,7 +12,7 @@ ResponsesSpec = dict[int, ResponseSpec]
 TagType = str
 
 
-def docs(  # noqa: C901
+def docs(
     *,
     tags: list[TagType] | None = None,
     summary: str | None = None,
@@ -90,10 +90,8 @@ def docs(  # noqa: C901
         extra_responses = responses or {}
 
         # Update the function's apispec attributes
-        if "parameters" in api_spec:
-            api_spec["parameters"].extend(extra_parameters)
-        if "responses" in api_spec:
-            api_spec["responses"].update(extra_responses)
+        api_spec["parameters"].extend(extra_parameters)
+        api_spec["responses"].update(extra_responses)
         api_spec.update(kwargs)
 
         return func
