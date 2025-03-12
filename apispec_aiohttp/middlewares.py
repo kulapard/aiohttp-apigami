@@ -6,8 +6,6 @@ from aiohttp.typedefs import Handler
 from .aiohttp import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, HandlerSchema
 from .utils import issubclass_py37fix
 
-_Schema = dict[str, str]
-
 
 def _get_handler_schemas(request: web.Request) -> list[HandlerSchema] | None:
     """
