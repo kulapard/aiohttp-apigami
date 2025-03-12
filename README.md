@@ -13,7 +13,7 @@ Build and document REST APIs with [aiohttp](https://github.com/aio-libs/aiohttp)
 - `docs` and `request_schema` decorators to add Swagger/OpenAPI spec support out of the box
 - Specialized request part decorators: `match_info_schema`, `querystring_schema`, `form_schema`, `json_schema`, `headers_schema` and `cookies_schema` for targeted validation. See [Request Part Decorators](#more-decorators) for details.
 - `validation_middleware` middleware to enable validating with marshmallow schemas
-- Built-in **SwaggerUI** support
+- Built-in [Swagger UI](https://github.com/swagger-api/swagger-ui) support
 
 **apispec-aiohttp** API is based on `aiohttp-apispec` (no longer maintained) which was inspired by the `flask-apispec` library
 
