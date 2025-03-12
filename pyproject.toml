@@ -1,10 +1,13 @@
 [build-system]
-requires = ["hatchling>=1.27.0,<2.0.0"]
+requires = ["hatchling>=1.18.0,<2.0.0","hatch-vcs>=0.4.0,<1.0.0"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
 
 [project]
 name = "apispec-aiohttp"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Build and document REST APIs with aiohttp and apispec"
 readme = "README.md"
 requires-python = ">=3.10"
