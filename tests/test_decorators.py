@@ -167,6 +167,49 @@ class TestViewDecorators:
         assert aiohttp_view_all.__apispec__["summary"] == "Test method summary"
         assert aiohttp_view_all.__apispec__["description"] == "Test method description"
 
+    @pytest.fixture
+    def aiohttp_view_extended_docs(self) -> Handler:
+        security_requirement: list[dict[str, list[str]]] = [{"api_key": []}]
+
+        @docs(
+            tags=["extended", "test"],
+            summary="Extended docs test",
+            description="Testing all parameters of docs decorator",
+            parameters=[{"in": "header", "name": "X-Test", "schema": {"type": "string"}}],
+            responses={404: {"description": "Not found"}},
+            produces=["application/json", "text/html"],
+            consumes=["application/json"],
+            deprecated=True,
+            operation_id="extendedTest",
+            security=security_requirement,
+            custom_field="custom_value",
+        )
+        async def index(request: web.Request, **data: Any) -> web.Response:
+            return web.json_response({"msg": "done", "data": {}})
+
+        return index
+
+    def test_extended_docs(self, aiohttp_view_extended_docs: Handler) -> None:
+        """Test that all typed parameters in docs decorator work correctly."""
+        assert hasattr(aiohttp_view_extended_docs, "__apispec__")
+
+        # Test standard parameters
+        assert aiohttp_view_extended_docs.__apispec__["tags"] == ["extended", "test"]
+        assert aiohttp_view_extended_docs.__apispec__["summary"] == "Extended docs test"
+        assert aiohttp_view_extended_docs.__apispec__["description"] == "Testing all parameters of docs decorator"
+        assert len(aiohttp_view_extended_docs.__apispec__["parameters"]) == 1
+        assert aiohttp_view_extended_docs.__apispec__["parameters"][0]["name"] == "X-Test"
+        assert 404 in aiohttp_view_extended_docs.__apispec__["responses"]
+        assert aiohttp_view_extended_docs.__apispec__["produces"] == ["application/json", "text/html"]
+        assert aiohttp_view_extended_docs.__apispec__["consumes"] == ["application/json"]
+        assert aiohttp_view_extended_docs.__apispec__["deprecated"] is True
+        # Field name should match what's actually used in the implementation
+        assert aiohttp_view_extended_docs.__apispec__["operationId"] == "extendedTest"
+        assert aiohttp_view_extended_docs.__apispec__["security"] == [{"api_key": []}]
+
+        # Test custom parameter
+        assert aiohttp_view_extended_docs.__apispec__["custom_field"] == "custom_value"
+
     def test_view_multiple_body_parameters(self) -> None:
         with pytest.raises(RuntimeError) as ex:
 
