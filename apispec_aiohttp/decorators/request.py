@@ -125,9 +125,6 @@ def request_schema(
     return wrapper
 
 
-# For backward compatibility
-use_kwargs = request_schema
-
 # Decorators for specific request data validations (shortenings)
 match_info_schema = partial(request_schema, location="match_info", put_into="match_info")
 querystring_schema = partial(request_schema, location="querystring", put_into="querystring")

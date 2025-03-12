@@ -12,7 +12,6 @@ from .decorators import (
     querystring_schema,
     request_schema,
     response_schema,
-    use_kwargs,
 )
 from .middlewares import validation_middleware
 from .typedefs import IHandler

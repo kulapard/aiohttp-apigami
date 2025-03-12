@@ -8,6 +8,5 @@ from .request import (
     match_info_schema,
     querystring_schema,
     request_schema,
-    use_kwargs,
 )
 from .response import response_schema
