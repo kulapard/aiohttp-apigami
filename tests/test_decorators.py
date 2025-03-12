@@ -204,7 +204,7 @@ class TestViewDecorators:
         assert aiohttp_view_extended_docs.__apispec__["consumes"] == ["application/json"]
         assert aiohttp_view_extended_docs.__apispec__["deprecated"] is True
         # Field name should match what's actually used in the implementation
-        assert aiohttp_view_extended_docs.__apispec__["operation_id"] == "extendedTest"
+        assert aiohttp_view_extended_docs.__apispec__["operationId"] == "extendedTest"
         assert aiohttp_view_extended_docs.__apispec__["security"] == [{"api_key": []}]
 
         # Test custom parameter
