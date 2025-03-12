@@ -62,7 +62,7 @@ To run the example application:
 make run-example
 ```
 
-The example will be available at http://localhost:8080 with SwaggerUI at http://localhost:8080/docs.
+The example will be available at http://localhost:8080 with SwaggerUI at http://localhost:8080/api/docs.
 
 ## Quickstart
 
