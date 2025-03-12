@@ -14,5 +14,6 @@
 .mypy_cache/
 .DS_Store
 .python-version
+.env
 uv.lock
 CLAUDE.md

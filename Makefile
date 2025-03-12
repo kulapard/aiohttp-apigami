@@ -1,3 +1,6 @@
+include .env
+
+
 # Install dependencies
 deps:
 	uv sync --frozen --all-extras --dev
@@ -8,8 +11,8 @@ test:
 build:
 	uv build --verbose
 
-upload: build
-	twine upload dist/*
+publish:
+	uv publish --verbose --token ${PYPI_API_TOKEN}
 
 mypy:
 	uv run mypy .
@@ -21,10 +24,6 @@ pre-commit-update:
 	uv run pre-commit autoupdate
 
 lint: pre-commit mypy
-
-# make set-version VERSION=1.2.3
-set-version:
-	uv run --no-sync --with toml-cli toml set --toml-path=pyproject.toml project.version $(VERSION)
 
 clean:
 	rm -rf `find . -name __pycache__`
