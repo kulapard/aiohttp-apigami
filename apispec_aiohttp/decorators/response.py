@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TypeVar
 
-import marshmallow
+import marshmallow as m
 
 from apispec_aiohttp.typedefs import HandlerType
 
@@ -9,7 +9,7 @@ T = TypeVar("T", bound=HandlerType)
 
 
 def response_schema(
-    schema: type[marshmallow.Schema] | marshmallow.Schema,
+    schema: type[m.Schema] | m.Schema,
     code: int = 200,
     required: bool = False,
     description: str | None = None,
@@ -53,7 +53,3 @@ def response_schema(
         return func
 
     return wrapper
-
-
-# For backward compatibility
-marshal_with = response_schema

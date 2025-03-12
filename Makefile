@@ -40,3 +40,6 @@ clean:
 	rm -f .coverage.*
 	rm -rf build
 	rm -rf dist
+
+run-example:
+	uv run python example/run.py

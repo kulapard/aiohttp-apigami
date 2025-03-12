@@ -10,4 +10,4 @@ from .request import (
     request_schema,
     use_kwargs,
 )
-from .response import marshal_with, response_schema
+from .response import response_schema

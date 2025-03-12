@@ -9,43 +9,68 @@
 
 Build and document REST APIs with [aiohttp](https://github.com/aio-libs/aiohttp) and [apispec](https://github.com/marshmallow-code/apispec)
 
-```apispec-aiohttp``` key features:
-- ```docs``` and ```request_schema``` decorators
-to add swagger spec support out of the box;
-- ```match_info_schema```, ```querystring_schema```,
-```form_schema```, ```json_schema```, ```headers_schema``` and ```cookies_schema```
-decorators for specific request parts validation.
-Look [here](#more-decorators) for more info.
-- ```validation_middleware``` middleware to enable validating
-with marshmallow schemas from those decorators;
-- **SwaggerUI** support.
+**apispec-aiohttp** key features:
+- `docs` and `request_schema` decorators to add Swagger/OpenAPI spec support out of the box
+- Specialized request part decorators: `match_info_schema`, `querystring_schema`, `form_schema`, `json_schema`, `headers_schema` and `cookies_schema` for targeted validation. See [Request Part Decorators](#more-decorators) for details.
+- `validation_middleware` middleware to enable validating with marshmallow schemas
+- Built-in **SwaggerUI** support
 
-```apispec-aiohttp``` api is based on ```aiohttp-apispec``` (seems abandoned) which is fully inspired by ```flask-apispec``` library
+**apispec-aiohttp** API is based on `aiohttp-apispec` (no longer maintained) which was inspired by the `flask-apispec` library
 
 
 ## Contents
 
 - [Install](#install)
+- [Example Application](#example-application)
 - [Quickstart](#quickstart)
 - [Adding validation middleware](#adding-validation-middleware)
 - [More decorators](#more-decorators)
 - [Custom error handling](#custom-error-handling)
-- [Build swagger web client](#build-swagger-web-client)
-- [Versioning](#versioning)
+- [SwaggerUI Integration](#swaggerui-integration)
 
 
 ## Install
-
+With [uv](https://docs.astral.sh/uv/) package manager:
+```bash
+uv add apispec-aiohttp
 ```
+or with pip:
+```bash
 pip install apispec-aiohttp
 ```
 
+**Requirements:**
+- Python 3.10+
+- aiohttp 3.0+
+- apispec 5.0+
+- webargs 8.0+
+- jinja2 3.0+
+- marshmallow 3.0+
+
+## Example Application
+
+A fully functional example application is included in the `example/` directory. This example demonstrates all the features of the library including:
+
+- Request and response validation
+- Swagger UI integration
+- Different schema decorators
+- Error handling
+
+To run the example application:
+
+```bash
+make run-example
+```
+
+The example will be available at http://localhost:8080 with SwaggerUI at http://localhost:8080/docs.
+
 ## Quickstart
 
-```Python
+```python
 from apispec_aiohttp import (
     docs,
     request_schema,
+    response_schema,
     setup_apispec_aiohttp,
 )
 from aiohttp import web
@@ -57,13 +82,21 @@ class RequestSchema(Schema):
     name = fields.Str(description="name")
 
 
+class ResponseSchema(Schema):
+    msg = fields.Str()
+    data = fields.Dict()
+
+
 @docs(
     tags=["mytag"],
     summary="Test method summary",
     description="Test method description",
 )
-@request_schema(RequestSchema(strict=True))
+@request_schema(RequestSchema())
+@response_schema(ResponseSchema(), 200)
 async def index(request):
+    # Access validated data from request
+    # data = request["data"]
     return web.json_response({"msg": "done", "data": {}})
 
 
@@ -83,6 +116,9 @@ setup_apispec_aiohttp(
 # and docs on 'http://localhost:8080/api/docs'
 web.run_app(app)
 ```
+
+### Class Based Views
+
 Class based views are also supported:
 ```python
 class TheView(web.View):
@@ -91,9 +127,9 @@ class TheView(web.View):
         summary="View method summary",
         description="View method description",
     )
-    @request_schema(RequestSchema(strict=True))
+    @request_schema(RequestSchema())
     @response_schema(ResponseSchema(), 200)
-    def delete(self):
+    async def delete(self):
         return web.json_response(
             {"msg": "done", "data": {"name": self.request["data"]["name"]}}
         )
@@ -102,8 +138,10 @@ class TheView(web.View):
 app.router.add_view("/v1/view", TheView)
 ```
 
-As alternative you can add responses info to `docs` decorator, which is more compact way.
-And it allows you not to use schemas for responses documentation:
+### Combining Documentation and Schemas
+
+As an alternative, you can add responses info directly to the `docs` decorator, which is a more compact approach.
+This method allows you to document responses without separate decorators:
 
 ```python
 @docs(
@@ -119,7 +157,7 @@ And it allows you not to use schemas for responses documentation:
         422: {"description": "Validation error"},
     },
 )
-@request_schema(RequestSchema(strict=True))
+@request_schema(RequestSchema())
 async def index(request):
     return web.json_response({"msg": "done", "data": {}})
 ```
@@ -182,8 +220,8 @@ async def index(request):
 
 ## More decorators
 
-Starting from version 2.0 you can use shortenings for documenting and validating
-specific request parts like cookies, headers etc using those decorators:
+You can use specialized decorators for documenting and validating specific parts of a request
+such as cookies, headers, and more with these shorthand decorators:
 
 | Decorator name | Default put_into param |
 |:----------|:-----------------|
@@ -194,7 +232,7 @@ specific request parts like cookies, headers etc using those decorators:
 | headers_schema | headers |
 | cookies_schema | cookies |
 
-And example:
+### Example Usage of Specialized Schema Decorators:
 
 ```python
 @docs(
@@ -276,9 +314,7 @@ setup_apispec_aiohttp(app, error_callback=my_error_handler)
 app.middlewares.extend([intercept_error, validation_middleware])
 ```
 
-## Build swagger web client
-
-#### 3.X SwaggerUI version
+## SwaggerUI Integration
 
 Just add `swagger_path` parameter to `setup_apispec_aiohttp` function.
 
@@ -288,34 +324,16 @@ For example:
 setup_apispec_aiohttp(app, swagger_path="/docs")
 ```
 
-Then go to `/docs` and see awesome SwaggerUI
+Then go to `/docs` to see the SwaggerUI.
 
-#### 2.X SwaggerUI version
+## Versioning
 
-If you prefer older version you can use
-[aiohttp_swagger](https://github.com/cr0hn/aiohttp-swagger) library.
-`apispec-aiohttp` adds `swagger_dict` parameter to aiohttp web application
-after initialization (with `setup_apispec_aiohttp` function).
-So you can use it easily like:
+This library uses semantic versioning:
+- Major version changes indicate breaking API changes
+- Minor version changes add new features in a backward-compatible manner
+- Patch version changes fix bugs in a backward-compatible manner
 
-```Python
-from apispec_aiohttp import setup_apispec_aiohttp
-from aiohttp_swagger import setup_swagger
-
-
-def create_app(app):
-    setup_apispec_aiohttp(app)
-
-    async def swagger(app):
-        setup_swagger(
-            app=app, swagger_url="/api/doc", swagger_info=app["swagger_dict"]
-        )
-
-    app.on_startup.append(swagger)
-    # now we can access swagger client on '/api/doc' url
-    ...
-    return app
-```
+Version history is available in the [GitHub releases](https://github.com/kulapard/apispec-aiohttp/releases) page.
 
 ## Support
 
