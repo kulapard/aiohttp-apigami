@@ -5,6 +5,7 @@ import os
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
+from string import Template
 from typing import Any
 
 import marshmallow as ma
@@ -14,7 +15,6 @@ from aiohttp.helpers import AppKey
 from apispec import APISpec
 from apispec.core import VALID_METHODS_OPENAPI_V2
 from apispec.ext.marshmallow import MarshmallowPlugin, common
-from jinja2 import Template
 from webargs.aiohttpparser import AIOHTTPParser, parser
 
 from .utils import get_path, get_path_keys, issubclass_py37fix
@@ -102,7 +102,7 @@ class AiohttpApiSpec:
         self._request_data_name = request_data_name
         self.error_callback = error_callback
         self.prefix = prefix
-        self._index_page = None
+        self._index_page: str | None = None
         if app is not None:
             self.register(app, in_place)
 
@@ -159,7 +159,7 @@ class AiohttpApiSpec:
             if not self.spec.options.get("display_configurations"):
                 self.spec.options["display_configurations"] = {}
 
-            self._index_page = Template(swg_tmp.read()).render(  # type: ignore[assignment]
+            self._index_page = Template(swg_tmp.read()).substitute(
                 path=url,
                 static=static_path,
                 display_configurations=json.dumps(self.spec.options["display_configurations"]),
