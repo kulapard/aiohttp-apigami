@@ -17,7 +17,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin, common
 from jinja2 import Template
 from webargs.aiohttpparser import AIOHTTPParser, parser
 
-from .utils import get_path, get_path_keys, issubclass_py37fix
+from .utils import get_path, get_path_keys
 
 _AiohttpView = Callable[[web.Request], Awaitable[web.StreamResponse]]
 _SchemaType = type[ma.Schema] | ma.Schema | str
@@ -179,7 +179,7 @@ class AiohttpApiSpec:
 
     def _register(self, app: web.Application) -> None:
         for route in app.router.routes():
-            if issubclass_py37fix(route.handler, web.View) and route.method == METH_ANY:
+            if issubclass(route.handler, web.View) and route.method == METH_ANY:
                 for attr in dir(route.handler):
                     if attr.upper() in METH_ALL:
                         view = getattr(route.handler, attr)
