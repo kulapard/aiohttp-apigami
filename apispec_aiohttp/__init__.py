@@ -30,7 +30,6 @@ __all__ = [
     "request_schema",
     "response_schema",
     "setup_apispec_aiohttp",
-    "use_kwargs",
     "validation_middleware",
 ]
 
