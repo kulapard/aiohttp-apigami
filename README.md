@@ -44,7 +44,6 @@ pip install apispec-aiohttp
 - aiohttp 3.0+
 - apispec 5.0+
 - webargs 8.0+
-- jinja2 3.0+
 - marshmallow 3.0+
 
 ## Example Application
