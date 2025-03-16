@@ -297,33 +297,41 @@ def setup_apispec_aiohttp(
 
     .. code-block:: python
 
-        from apispec_aiohttp import docs, request_schema, setup_apispec_aiohttp
+        from apispec_aiohttp import (
+            docs,
+            request_schema,
+            setup_apispec_aiohttp,
+        )
         from aiohttp import web
         from marshmallow import Schema, fields
 
 
         class RequestSchema(Schema):
             id = fields.Int()
-            name = fields.Str(description='name')
+            name = fields.Str(description="name")
             bool_field = fields.Bool()
 
 
-        @docs(tags=['mytag'],
-              summary='Test method summary',
-              description='Test method description')
+        @docs(
+            tags=["mytag"],
+            summary="Test method summary",
+            description="Test method description",
+        )
         @request_schema(RequestSchema)
         async def index(request):
-            return web.json_response({'msg': 'done', 'data': {}})
+            return web.json_response({"msg": "done", "data": {}})
 
 
         app = web.Application()
-        app.router.add_post('/v1/test', index)
+        app.router.add_post("/v1/test", index)
 
         # init docs with all parameters, usual for ApiSpec
-        setup_apispec_aiohttp(app=app,
-                              title='My Documentation',
-                              version='v1',
-                              url='/api/docs/api-docs')
+        setup_apispec_aiohttp(
+            app=app,
+            title="My Documentation",
+            version="v1",
+            url="/api/docs/api-docs",
+        )
 
         # now we can find it on 'http://localhost:8080/api/docs/api-docs'
         web.run_app(app)

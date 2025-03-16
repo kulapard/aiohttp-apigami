@@ -29,9 +29,10 @@ def response_schema(
             msg = fields.Str()
             data = fields.Dict()
 
+
         @response_schema(ResponseSchema(), 200)
         async def index(request):
-            return web.json_response({'msg': 'done', 'data': {}})
+            return web.json_response({"msg": "done", "data": {}})
 
     :param str description: response description
     :param bool required:

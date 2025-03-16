@@ -60,14 +60,16 @@ def request_schema(
 
         class RequestSchema(Schema):
             id = fields.Int()
-            name = fields.Str(description='name')
+            name = fields.Str(description="name")
+
 
         @request_schema(RequestSchema(strict=True))
         async def index(request):
             # apispec_aiohttp_middleware should be used for it
-            data = request['data']
-            return web.json_response({'name': data['name'],
-                                      'id': data['id']})
+            data = request["data"]
+            return web.json_response(
+                {"name": data["name"], "id": data["id"]}
+            )
 
     :param schema: :class:`Schema <marshmallow.Schema>` class or instance
     :param location: Default request locations to parse
