@@ -45,22 +45,23 @@ async def create_user(request: web.Request) -> web.Response:
     return web.json_response({"message": f"Hello {new_user['name']}!"})
 
 
-@docs(
-    tags=["users"],
-    summary="Get user by id",
-    description="Get user by id from our toy database",
-    responses={
-        200: {"description": "Ok", "schema": User},
-        401: {"description": "Unauthorized"},
-        422: {"description": "Validation error"},
-        500: {"description": "Server error"},
-    },
-)
-@match_info_schema(GetUser)
-@response_schema(User)
-async def get_user(request: web.Request) -> web.Response:
-    user_id = request["match_info"]["id"]
-    if user_id not in request.app["users"]:
-        return web.json_response(status=404)
-    user = request.app["users"][user_id]
-    return web.json_response(user)
+class UserView(web.View):
+    @docs(
+        tags=["users"],
+        summary="Get user by id",
+        description="Get user by id from our toy database",
+        responses={
+            200: {"description": "Ok", "schema": User},
+            401: {"description": "Unauthorized"},
+            422: {"description": "Validation error"},
+            500: {"description": "Server error"},
+        },
+    )
+    @match_info_schema(GetUser)
+    @response_schema(User)
+    async def get(self) -> web.Response:
+        user_id = self.request["match_info"]["id"]
+        if user_id not in self.request.app["users"]:
+            return web.json_response(status=404)
+        user = self.request.app["users"][user_id]
+        return web.json_response(user)
