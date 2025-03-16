@@ -34,6 +34,8 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
           python-version: ${{ matrix.python-version }}
+      - name: Install pip for mypy (install_types)
+        run: uv pip install pip
       - name: Install dependencies
         run: uv sync
       - name: Run mypy
