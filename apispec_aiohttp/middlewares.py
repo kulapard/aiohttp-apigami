@@ -4,7 +4,7 @@ from aiohttp import web
 from aiohttp.typedefs import Handler
 
 from .aiohttp import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, HandlerSchema
-from .utils import issubclass_py37fix
+from .utils import is_class_based_view
 
 
 def _get_handler_schemas(request: web.Request) -> list[HandlerSchema] | None:
@@ -16,7 +16,7 @@ def _get_handler_schemas(request: web.Request) -> list[HandlerSchema] | None:
     if hasattr(handler, "__schemas__"):
         return cast(list[HandlerSchema], handler.__schemas__)
 
-    if issubclass_py37fix(handler, web.View):
+    if is_class_based_view(handler):
         sub_handler = getattr(handler, request.method.lower(), None)
         if sub_handler and hasattr(sub_handler, "__schemas__"):
             return cast(list[HandlerSchema], sub_handler.__schemas__)
