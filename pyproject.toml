@@ -70,6 +70,9 @@ select = [
     "T20", # flake8-print
     "UP", # pyupgrade
 ]
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 60
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

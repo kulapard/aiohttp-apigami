@@ -48,19 +48,22 @@ def docs(  # noqa: C901
 
         from aiohttp import web
 
+
         @docs(
-            tags=['my_tag'],
-            summary='Test method summary',
-            description='Test method description',
-            parameters=[{
-                'in': 'header',
-                'name': 'X-Request-ID',
-                'schema': {'type': 'string', 'format': 'uuid'},
-                'required': 'true'
-            }]
+            tags=["my_tag"],
+            summary="Test method summary",
+            description="Test method description",
+            parameters=[
+                {
+                    "in": "header",
+                    "name": "X-Request-ID",
+                    "schema": {"type": "string", "format": "uuid"},
+                    "required": "true",
+                }
+            ],
         )
         async def index(request):
-            return web.json_response({'msg': 'done', 'data': {}})
+            return web.json_response({"msg": "done", "data": {}})
 
     """
     # Prepare kwargs dictionary with all provided attributes
