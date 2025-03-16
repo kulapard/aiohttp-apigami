@@ -15,7 +15,7 @@ publish:
 	uv publish --verbose --token ${PYPI_API_TOKEN}
 
 mypy:
-	uv run mypy .
+	uv run --with pip mypy .
 
 pre-commit:
 	uv run pre-commit run --all-files
