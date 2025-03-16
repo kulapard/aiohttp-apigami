@@ -1,10 +1,11 @@
 include LICENSE
 include README.md
+include Makefile
 include pyproject.toml
-include apispec_aiohttp/py.typed
-recursive-include apispec_aiohttp/static *
 graft apispec_aiohttp
-graft docs
+graft tests
+graft examples
+graft tools
 global-exclude *.pyc
 global-exclude *.pyd
 global-exclude *.so
@@ -14,5 +15,3 @@ global-exclude *.a
 global-exclude *.obj
 global-exclude __pycache__
 prune docs/_build
-prune example
-prune tests
