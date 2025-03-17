@@ -70,7 +70,7 @@ jobs:
 
             [old]: https://github.com/swagger-api/swagger-ui/releases/tag/v${{ steps.current_version.outputs.version }}
             [new]: https://github.com/swagger-api/swagger-ui/releases/tag/v${{ steps.updated_version.outputs.version }}
-            [diff]: https://github.com/astral-sh/ruff-pre-commit/compare/v${{ steps.current_version.outputs.version }}...v${{ steps.updated_version.outputs.version }}
+            [diff]: https://github.com/swagger-api/swagger-ui/releases/tag/v${{ steps.current_version.outputs.version }}...v${{ steps.updated_version.outputs.version }}
           labels: |
             enhancement
             dependencies
