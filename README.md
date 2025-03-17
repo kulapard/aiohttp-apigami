@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/github/kulapard/apispec-aiohttp/graph/badge.svg?token=Y5EJBF1F25)](https://codecov.io/github/kulapard/apispec-aiohttp)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/kulapard/apispec-aiohttp/master.svg)](https://results.pre-commit.ci/latest/github/kulapard/apispec-aiohttp/master)
 [![PyPI - Version](https://img.shields.io/pypi/v/apispec-aiohttp?color=%2334D058&label=pypi%20package)](https://pypi.org/project/apispec-aiohttp)
-
+<br>
 [![PyPI Downloads](https://static.pepy.tech/badge/apispec-aiohttp)](https://pepy.tech/projects/apispec-aiohttp)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apispec-aiohttp)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/kulapard/apispec-aiohttp/blob/master/LICENSE)
