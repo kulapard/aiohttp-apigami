@@ -32,6 +32,7 @@ jobs:
       - name: Run update Swagger UI to latest version
         run: |
           uv run tools/update_swagger_ui.py
+          uv run pre-commit run --all-files
 
       - name: Get updated version of Swagger UI
         id: updated_version
