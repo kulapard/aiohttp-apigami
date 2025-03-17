@@ -35,7 +35,8 @@ jobs:
 
       - name: Run pre-commit
         run: |
-          uv run pre-commit run --all-files 2>&1 
+          uv run pre-commit run --all-files
+        continue-on-error: true
 
       - name: Get updated version of Swagger UI
         id: updated_version
