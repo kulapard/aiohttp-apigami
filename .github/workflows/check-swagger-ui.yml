@@ -5,6 +5,7 @@ on:
     # Run weekly on Monday at 8:00 UTC
     - cron: '0 8 * * 1'
   workflow_dispatch:  # Allow manual triggering
+  pull_request:
 
 
 jobs:
@@ -49,8 +50,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          sign-commits: true
           signoff: false
           branch: "tech/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
           delete-branch: true
