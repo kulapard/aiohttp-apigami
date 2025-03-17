@@ -23,7 +23,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
-          python-version: ${{ matrix.python-version }}
+          python-version: "latest"
       - name: Install dependencies
         run: uv sync
 
