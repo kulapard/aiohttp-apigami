@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Run mypy
-        run: uv run --with pip mypy .
+        run: uv run mypy .
 
   test:
     runs-on: ubuntu-latest
