@@ -81,7 +81,7 @@ async def aiohttp_app(  # noqa: C901
     aiohttp_client: AiohttpClient,
     request: pytest.FixtureRequest,
     example_for_request_schema: dict[str, Any],
-) -> TestClient[web.Request, web.Application]:
+) -> TestClient:  # type: ignore[type-arg] # for mypy + older aiohttp versions
     location, nested = request.param
 
     @docs(
