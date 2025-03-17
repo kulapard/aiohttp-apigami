@@ -13,7 +13,7 @@ API documentation and validation for [aiohttp](https://github.com/aio-libs/aioht
 - `docs` and `request_schema` decorators to add Swagger/OpenAPI spec support out of the box
 - Specialized request part decorators: `match_info_schema`, `querystring_schema`, `form_schema`, `json_schema`, `headers_schema` and `cookies_schema` for targeted validation. See [Request Part Decorators](#more-decorators) for details.
 - `validation_middleware` middleware to enable validating with marshmallow schemas
-- Built-in [Swagger UI](https://github.com/swagger-api/swagger-ui) support
+- Built-in [Swagger UI](https://github.com/swagger-api/swagger-ui) (`v5.20.1`)
 
 **apispec-aiohttp** API is based on `aiohttp-apispec` (no longer maintained) which was inspired by the `flask-apispec` library
 
