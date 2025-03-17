@@ -27,6 +27,7 @@ API documentation and validation for [aiohttp](https://github.com/aio-libs/aioht
 - [More decorators](#more-decorators)
 - [Custom error handling](#custom-error-handling)
 - [SwaggerUI Integration](#swaggerui-integration)
+- [Updating Swagger UI](#updating-swagger-ui)
 
 
 ## Install
@@ -324,6 +325,28 @@ setup_apispec_aiohttp(app, swagger_path="/docs")
 ```
 
 Then go to `/docs` to see the SwaggerUI.
+
+## Updating Swagger UI
+
+This package includes a built-in Swagger UI distribution. To update it to the latest version:
+
+```bash
+make update-swagger-ui
+```
+
+This command will:
+1. Check the current version of Swagger UI in the project
+2. Fetch the latest version from the [Swagger UI GitHub repository](https://github.com/swagger-api/swagger-ui)
+3. If a newer version is available, it will download and update the UI files
+4. Run pre-commit hooks to ensure the code quality
+
+You can also update the Swagger UI manually by running:
+
+```bash
+python tools/update_swagger_ui.py
+```
+
+The script automatically handles all the necessary modifications to make Swagger UI work within the package.
 
 ## Versioning
 
