@@ -59,7 +59,6 @@ jobs:
           body: |
             ## Automated Swagger UI Update
 
-            ### Changes Included:
             This PR updates Swagger UI from [${{ steps.current_version.outputs.version }}][old] to [${{ steps.updated_version.outputs.version }}][new] ([compare][compare]).
 
             ### Changes included:
