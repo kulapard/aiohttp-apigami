@@ -41,7 +41,7 @@ pip install apispec-aiohttp
 
 **Requirements:**
 - Python 3.10+
-- aiohttp 3.0+
+- aiohttp 3.10+
 - apispec 5.0+
 - webargs 8.0+
 - marshmallow 3.0+
