@@ -328,7 +328,11 @@ Then go to `/docs` to see the SwaggerUI.
 
 ## Updating Swagger UI
 
-This package includes a built-in Swagger UI distribution. To update it to the latest version:
+This package includes a built-in Swagger UI distribution. The Swagger UI version is automatically checked weekly by a GitHub Action, which creates a pull request when a new version is available.
+
+### Manual Updates
+
+To manually update Swagger UI to the latest version:
 
 ```bash
 make update-swagger-ui
@@ -340,13 +344,23 @@ This command will:
 3. If a newer version is available, it will download and update the UI files
 4. Run pre-commit hooks to ensure the code quality
 
-You can also update the Swagger UI manually by running:
+You can also update the Swagger UI by directly running:
 
 ```bash
 python tools/update_swagger_ui.py
 ```
 
 The script automatically handles all the necessary modifications to make Swagger UI work within the package.
+
+### Automated Updates
+
+The project has a GitHub workflow (`check-swagger-ui.yml`) that runs weekly to check for new Swagger UI versions. When a new version is detected, the workflow:
+
+1. Creates a new branch
+2. Updates the Swagger UI files
+3. Creates a pull request with the changes
+
+This ensures the project stays up-to-date with the latest Swagger UI version without manual intervention.
 
 ## Versioning
 
