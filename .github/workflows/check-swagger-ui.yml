@@ -52,7 +52,7 @@ jobs:
           commit-message: "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
           sign-commits: true
           signoff: false
-          branch: "tech/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
+          branch: "autoupdate/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
           delete-branch: true
           base: "master"
           title: "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
