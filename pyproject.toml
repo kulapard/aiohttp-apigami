@@ -77,4 +77,4 @@ docstring-code-line-length = 60
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "-v --cov=apispec_aiohttp"
+addopts = "-v --cov=apispec_aiohttp --cov-branch --cov-report=xml --junitxml=junit.xml"
