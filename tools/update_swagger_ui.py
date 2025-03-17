@@ -97,7 +97,7 @@ def detect_latest_release(repo: str) -> str:
         resp = requests.get(url, timeout=GITHUB_API_TIMEOUT)
         resp.raise_for_status()
         latest = resp.json()
-        tag = latest.get("tag_name")
+        tag: str | None = latest.get("tag_name")
 
         if not tag:
             raise ValueError("No tag found in GitHub API response")
