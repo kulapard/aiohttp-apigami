@@ -2,9 +2,9 @@ name: Check Swagger UI Version
 
 on:
   pull_request:
-#  schedule:
-#    # Run weekly on Monday at 8:00 UTC
-#    - cron: '0 8 * * 1'
+  #  schedule:
+  #    # Run weekly on Monday at 8:00 UTC
+  #    - cron: '0 8 * * 1'
   workflow_dispatch:  # Allow manual triggering
 
 permissions:
@@ -44,38 +44,12 @@ jobs:
           VERSION=$(cat apispec_aiohttp/swagger_ui/VERSION)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Set up branch name
-        if: steps.current_version.outputs.version != steps.updated_version.outputs.version
-        id: set_branch
-        run: |
-          BRANCH_NAME="tech/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-
-      # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
-      # See users API: https://api.github.com/users/github-actions%5Bbot%5D
-      - name: Create branch and update Swagger UI
-        if: steps.current_version.outputs.version != steps.updated_version.outputs.version
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Create and switch to new branch
-          git checkout -b ${{ steps.set_branch.outputs.branch_name }}
-
-           # Commit changes
-          git add apispec_aiohttp/swagger_ui
-          git add README.md
-          git commit -m "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
-
-          # Push branch to remote
-          git push origin ${{ steps.set_branch.outputs.branch_name }}
-
       - name: Create Pull Request
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.set_branch.outputs.branch_name }}
+          branch: "tech/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
           base: "master"
           title: "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
           body: |
