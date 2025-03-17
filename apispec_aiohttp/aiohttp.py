@@ -1,6 +1,5 @@
 import copy
 import enum
-import json
 import os
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -32,6 +31,7 @@ NAME_SWAGGER_DOCS = "swagger.docs"
 NAME_SWAGGER_STATIC = "swagger.static"
 
 SWAGGER_UI_STATIC_FILES = Path(__file__).parent / "swagger_ui"
+SWAGGER_UI_VERSION_PATH = SWAGGER_UI_STATIC_FILES / "VERSION"
 INDEX_PAGE = "index.html"
 
 APISPEC_VALIDATED_DATA_NAME = AppKey("_apispec_validated_data_name", str)
@@ -156,13 +156,9 @@ class AiohttpApiSpec:
                 static_url = app.router[NAME_SWAGGER_STATIC].url_for(filename=INDEX_PAGE)
                 static_path = os.path.dirname(str(static_url))
 
-            if not self.spec.options.get("display_configurations"):
-                self.spec.options["display_configurations"] = {}
-
             self._index_page = Template(swg_tmp.read()).substitute(
                 path=url,
                 static=static_path,
-                display_configurations=json.dumps(self.spec.options["display_configurations"]),
             )
 
         assert self._index_page is not None  # for mypy

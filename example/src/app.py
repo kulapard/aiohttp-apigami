@@ -14,7 +14,7 @@ def create_app() -> web.Application:
     # In real life, you should use a database
     app["users"] = {}
 
-    setup_apispec_aiohttp(app, swagger_path="/api/docs")
+    setup_apispec_aiohttp(app, title="User API", version="0.0.1", swagger_path="/api/docs")
     app.middlewares.append(validation_middleware)
 
     return app

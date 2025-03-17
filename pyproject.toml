@@ -37,6 +37,7 @@ dependencies = [
 dev = [
     "codecov>=2.1.13,<3.0.0",
     "mypy",
+    "pip",
     "pre-commit",
     "pytest",
     "pytest-aiohttp",

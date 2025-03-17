@@ -43,3 +43,7 @@ clean:
 
 run-example:
 	uv run python example/run.py
+
+update-swagger-ui:
+	uv run tools/update_swagger_ui.py
+	make pre-commit
