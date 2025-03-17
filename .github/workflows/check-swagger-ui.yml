@@ -46,7 +46,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: "tech/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
