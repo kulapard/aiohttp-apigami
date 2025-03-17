@@ -35,7 +35,8 @@ jobs:
 
       - name: Run update Swagger UI to latest version
         run: |
-          make update_swagger_ui
+          uv run tools/update_swagger_ui.py
+          uv run pre-commit run
 
       - name: Get updated version of Swagger UI
         id: updated_version
@@ -49,18 +50,21 @@ jobs:
         run: |
           BRANCH_NAME="update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
 
+      # See users API: https://api.github.com/users/github-actions%5Bbot%5D
       - name: Create branch and update Swagger UI
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Create and switch to new branch
           git checkout -b ${{ steps.set_branch.outputs.branch_name }}
 
-          # Commit changes
+           # Commit changes
           git add apispec_aiohttp/swagger_ui
+          git add README.md
           git commit -m "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
 
           # Push branch to remote
