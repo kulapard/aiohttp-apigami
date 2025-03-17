@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/github/kulapard/apispec-aiohttp/graph/badge.svg?token=Y5EJBF1F25)](https://codecov.io/github/kulapard/apispec-aiohttp)
 [![PyPI - Version](https://img.shields.io/pypi/v/apispec-aiohttp?color=%2334D058&label=pypi%20package)](https://pypi.org/project/apispec-aiohttp)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apispec-aiohttp)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kulapard/apispec-aiohttp/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/kulapard/apispec-aiohttp/blob/master/LICENSE)
 ---
 
 API documentation and validation for [aiohttp](https://github.com/aio-libs/aiohttp) using [apispec](https://github.com/marshmallow-code/apispec)
@@ -341,4 +341,4 @@ Please star this repository if this project helped you!
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
