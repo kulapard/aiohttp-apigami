@@ -5,7 +5,7 @@ on:
 #  schedule:
 #    # Run weekly on Monday at 8:00 UTC
 #    - cron: '0 8 * * 1'
-#  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:  # Allow manual triggering
 
 permissions:
   contents: write
@@ -48,10 +48,10 @@ jobs:
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
         id: set_branch
         run: |
-          BRANCH_NAME="update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
+          BRANCH_NAME="tech/update-swagger-ui-to-${{ steps.updated_version.outputs.version }}"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-            # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
 
+      # NOTE: The user email is {user.id}+{user.login}@users.noreply.github.com.
       # See users API: https://api.github.com/users/github-actions%5Bbot%5D
       - name: Create branch and update Swagger UI
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
@@ -76,6 +76,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.set_branch.outputs.branch_name }}
+          base: "master"
           title: "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
           body: |
             ## Automated Swagger UI Update
