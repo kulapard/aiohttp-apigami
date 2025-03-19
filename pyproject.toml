@@ -8,7 +8,7 @@ source = "vcs"
 [project]
 name = "apispec-aiohttp"
 dynamic = ["version"]
-description = "Build and document REST APIs with aiohttp and apispec"
+description = "API documentation and validation for aiohttp using apispec"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
