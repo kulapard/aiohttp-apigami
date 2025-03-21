@@ -132,7 +132,7 @@ class AiohttpApiSpec:
         if self.error_callback:
             parser.error_callback = self.error_callback
 
-        # Register routes
+        # Register routes and generate API spec
         if in_place:
             self._register(app)
         else:
@@ -149,15 +149,15 @@ class AiohttpApiSpec:
                 self._swagger_ui.setup(app, self.swagger_path)
 
     def _register_on_startup(self, app: web.Application) -> None:
-        """Registers routes on app startup"""
+        """Register routes and generate API spec on app startup"""
 
-        async def doc_routes(app_: web.Application) -> None:
+        async def _async_register(app_: web.Application) -> None:
             self._register(app_)
 
-        app.on_startup.append(doc_routes)
+        app.on_startup.append(_async_register)
 
     def _register(self, app: web.Application) -> None:
-        """Register routes with OpenAPI spec"""
+        """RRegister routes and generate API spec immediately"""
         self._route_processor.register_routes(app)
         app[SWAGGER_DICT] = self.swagger_dict()
 

@@ -59,12 +59,16 @@ class RouteProcessor:
     def register_routes(self, app: web.Application) -> None:
         """Register all routes from the application."""
         for route in app.router.routes():
+            # Class based views have multiple methods
+            # Register each method separately
             if is_class_based_view(route.handler) and route.method == METH_ANY:
                 for attr in dir(route.handler):
                     if attr.upper() in METH_ALL:
                         method = attr
-                        handler = getattr(route.handler, attr)
-                        self.register_route(route=route, method=method, handler=handler)
+                        sub_handler = getattr(route.handler, attr)
+                        self.register_route(route=route, method=method, handler=sub_handler)
+
+            # Function based views have a single method
             else:
                 method = route.method.lower()
                 handler = route.handler
