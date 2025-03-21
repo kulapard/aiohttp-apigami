@@ -34,18 +34,20 @@ T = TypeVar("T")
 
 
 def get_or_set_apispec(func: T) -> dict[str, Any]:
-    if not hasattr(func, API_SPEC_ATTR):
-        func_apispec: dict[str, Any] = {"schemas": [], "responses": {}, "parameters": []}
-        setattr(func, API_SPEC_ATTR, func_apispec)
-    else:
+    func_apispec: dict[str, Any]
+    if hasattr(func, API_SPEC_ATTR):
         func_apispec = getattr(func, API_SPEC_ATTR)
+    else:
+        func_apispec = {"schemas": [], "responses": {}, "parameters": []}
+        setattr(func, API_SPEC_ATTR, func_apispec)
     return func_apispec
 
 
 def get_or_set_schemas(func: T) -> list[ValidationSchema]:
-    if not hasattr(func, SCHEMAS_ATTR):
-        func_schemas: list[ValidationSchema] = []
-        setattr(func, SCHEMAS_ATTR, func_schemas)
-    else:
+    func_schemas: list[ValidationSchema]
+    if hasattr(func, SCHEMAS_ATTR):
         func_schemas = getattr(func, SCHEMAS_ATTR)
+    else:
+        func_schemas = []
+        setattr(func, SCHEMAS_ATTR, func_schemas)
     return func_schemas
