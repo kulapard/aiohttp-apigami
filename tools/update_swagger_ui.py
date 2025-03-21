@@ -55,7 +55,7 @@ INDEX_JAVASCRIPT = """
         plugins: [
           SwaggerUIBundle.plugins.DownloadUrl
         ],
-        layout: "BaseLayout",
+        layout: "$layout",
       });
       // End Swagger UI call region
     };
@@ -247,8 +247,10 @@ def update_readme(version: str) -> None:
         with README_PATH.open("r", encoding="utf-8") as file:
             readme = file.read()
 
-        pattern = r"\[Swagger UI\]\(https://github.com/swagger-api/swagger-ui\) \(`\S+`\)"
-        new_text = f"[Swagger UI](https://github.com/swagger-api/swagger-ui) (`{version}`)"
+        start_tag = "<!-- SWAGGER_UI_VERSION_START -->"
+        end_tag = "<!-- SWAGGER_UI_VERSION_END -->"
+        pattern = rf"{start_tag}(.+){end_tag}"
+        new_text = f"{start_tag}[{version}](https://github.com/swagger-api/swagger-ui/releases/tag/{version}){end_tag}"
 
         updated_readme, count = re.subn(pattern, new_text, readme)
 
