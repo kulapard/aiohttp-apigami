@@ -12,6 +12,6 @@ API_SPEC_ATTR = "__apispec__"
 SCHEMAS_ATTR = "__schemas__"
 
 # Private keys
-PREFIX = str(uuid.uuid4())  # Prefix to avoid conflicts with other aiohttp keys
-APISPEC_VALIDATED_DATA_NAME = web.AppKey(f"{PREFIX}_apispec_validated_data_name", str)
-APISPEC_PARSER = web.AppKey(f"{PREFIX}_apispec_parser", AIOHTTPParser)
+_PREFIX = str(uuid.uuid4())  # Prefix to avoid conflicts with other aiohttp keys
+APISPEC_VALIDATED_DATA_NAME = web.AppKey(f"{_PREFIX}_apispec_validated_data_name", str)
+APISPEC_PARSER = web.AppKey(f"{_PREFIX}_apispec_parser", AIOHTTPParser)
