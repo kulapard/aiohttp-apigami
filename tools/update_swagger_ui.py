@@ -247,8 +247,10 @@ def update_readme(version: str) -> None:
         with README_PATH.open("r", encoding="utf-8") as file:
             readme = file.read()
 
-        pattern = r"<!-- SWAGGER_UI_VERSION_START -->(.+)<!-- SWAGGER_UI_VERSION_END -->"
-        new_text = f"<!-- SWAGGER_UI_VERSION_START -->[{version}](https://github.com/swagger-api/swagger-ui/releases/tag/{version})<!-- SWAGGER_UI_VERSION_END -->"
+        start_tag = "<!-- SWAGGER_UI_VERSION_START -->"
+        end_tag = "<!-- SWAGGER_UI_VERSION_END -->"
+        pattern = rf"{start_tag}(.+){end_tag}"
+        new_text = f"{start_tag}[{version}](https://github.com/swagger-api/swagger-ui/releases/tag/{version}){end_tag}"
 
         updated_readme, count = re.subn(pattern, new_text, readme)
 
