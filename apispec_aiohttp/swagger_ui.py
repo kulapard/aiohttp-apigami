@@ -17,17 +17,17 @@ NAME_SWAGGER_STATIC = "swagger.static"
 class SwaggerUIManager:
     """Manages the Swagger UI setup and rendering."""
 
-    __slots__ = ("_index_page", "static_path", "url")
+    __slots__ = ("_index_page", "_static_path", "_url")
 
     def __init__(self, url: str, static_path: str = "/static/swagger"):
-        self.url = url
-        self.static_path = static_path
+        self._url = url
+        self._static_path = static_path
         self._index_page: str | None = None
 
     def setup(self, app: web.Application, swagger_path: str) -> None:
         """Set up Swagger UI routes."""
         # Add static files route
-        app.router.add_static(self.static_path, SWAGGER_UI_STATIC_FILES, name=NAME_SWAGGER_STATIC)
+        app.router.add_static(self._static_path, SWAGGER_UI_STATIC_FILES, name=NAME_SWAGGER_STATIC)
 
         # Add the Swagger UI view
         async def swagger_view(_: web.Request) -> web.Response:
@@ -37,7 +37,7 @@ class SwaggerUIManager:
         app.router.add_get(swagger_path, swagger_view, name=NAME_SWAGGER_DOCS)
 
     def _get_index_page(self, app: web.Application, static_files: Path) -> str:
-        """Get or generate the Swagger UI index page."""
+        """Get or generate the Swagger UI index page HTML."""
         if self._index_page is not None:
             return self._index_page
 
