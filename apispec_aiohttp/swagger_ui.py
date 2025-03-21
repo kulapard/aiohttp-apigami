@@ -34,7 +34,7 @@ class SwaggerUIManager:
             index_page = self._get_index_page(app, SWAGGER_UI_STATIC_FILES)
             return web.Response(text=index_page, content_type="text/html")
 
-        app.router.add_route("GET", swagger_path, swagger_view, name=NAME_SWAGGER_DOCS)
+        app.router.add_get(swagger_path, swagger_view, name=NAME_SWAGGER_DOCS)
 
     def _get_index_page(self, app: web.Application, static_files: Path) -> str:
         """Get or generate the Swagger UI index page."""
