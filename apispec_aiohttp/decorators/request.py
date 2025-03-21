@@ -114,9 +114,8 @@ def request_schema(
             }
         )
 
-        # TODO: raise error if same location is used multiple times (no only for json)
-        if location == "json" and any(sch.location == "json" for sch in func_schemas):
-            raise RuntimeError("Multiple json locations are not allowed")
+        if location in {sch.location for sch in func_schemas}:
+            raise RuntimeError(f"Multiple `{location}` locations are not allowed")
 
         func_schemas.append(
             ValidationSchema(

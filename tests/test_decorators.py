@@ -7,6 +7,7 @@ from marshmallow import Schema, fields
 
 from apispec_aiohttp import docs, request_schema, response_schema
 from apispec_aiohttp.core import ValidationSchema
+from apispec_aiohttp.decorators.request import ValidLocations
 
 
 class RequestSchema(Schema):
@@ -189,4 +190,37 @@ class TestViewDecorators:
                 return web.json_response({"msg": "done", "data": {}})
 
         assert isinstance(ex.value, RuntimeError)
-        assert str(ex.value) == "Multiple json locations are not allowed"
+        assert str(ex.value) == "Multiple `json` locations are not allowed"
+
+    @pytest.mark.parametrize(
+        "location",
+        [
+            "querystring",
+            "cookies",
+            "headers",
+            "form",
+            "match_info",
+            "path",
+        ],
+    )
+    def test_multiple_locations_not_allowed(self, location: str) -> None:
+        """Test that using the same location multiple times raises a specific error."""
+
+        # Type cast to help mypy understand we're using valid locations
+        location_cast: ValidLocations = location  # type: ignore
+
+        with pytest.raises(RuntimeError) as ex:
+
+            @request_schema(RequestSchema, location=location_cast)
+            @request_schema(RequestSchema, location=location_cast)
+            async def index(request: web.Request, **data: Any) -> web.Response:
+                return web.json_response({"msg": "done", "data": {}})
+
+        assert isinstance(ex.value, RuntimeError)
+        assert str(ex.value) == f"Multiple `{location}` locations are not allowed"
+
+        # Test that different locations work fine
+        @request_schema(RequestSchema, location=location_cast)
+        @request_schema(RequestSchema, location="json")  # Different location
+        async def valid_index(request: web.Request, **data: Any) -> web.Response:
+            return web.json_response({"msg": "done", "data": {}})
