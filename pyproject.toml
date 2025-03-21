@@ -15,7 +15,7 @@ license = {text = "Apache-2.0"}
 authors = [
     {name = "Taras Drapalyuk", email = "taras@drapalyuk.com"}
 ]
-keywords = ["aiohttp", "marshmallow", "apispec", "swagger"]
+keywords = ["aiohttp", "marshmallow", "apispec", "swagger", "openapi", "schema", "validation", "documentation"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
