@@ -5,23 +5,22 @@ from typing import Any
 
 import marshmallow as m
 from aiohttp import web
-from aiohttp.helpers import AppKey
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin, common
 from webargs.aiohttpparser import AIOHTTPParser, parser
 
 from .route_processor import RouteProcessor
 from .spec import SpecManager
-from .swagger_ui import NAME_SWAGGER_SPEC, SwaggerUIManager
+from .swagger_ui import NAME_SWAGGER_SPEC, LayoutOption, SwaggerUIManager
 from .typedefs import SchemaNameResolver, SchemaType
 
 logger = logging.getLogger(__name__)
 
 # Constants
-APISPEC_VALIDATED_DATA_NAME = AppKey("_apispec_validated_data_name", str)
-APISPEC_PARSER = AppKey("_apispec_parser", AIOHTTPParser)
+APISPEC_VALIDATED_DATA_NAME = web.AppKey("_apispec_validated_data_name", str)
+APISPEC_PARSER = web.AppKey("_apispec_parser", AIOHTTPParser)
 
-# TODO: make it AppKey in 1.x release
+# TODO: make it web.AppKey in 1.x release
 # Leave as a string for backward compatibility with 0.x
 SWAGGER_DICT = "swagger_dict"
 
@@ -37,8 +36,10 @@ def resolver(schema: SchemaType) -> str:
     schema_instance = common.resolve_schema_instance(schema)
     prefix = "Partial-" if schema_instance.partial else ""
     schema_cls = common.resolve_schema_cls(schema)
+    # add prefix to schema name
     name = prefix + schema_cls.__name__ if hasattr(schema_cls, "__name__") else "Schema"
     if name.endswith("Schema"):
+        # remove "Schema" suffix
         return name[:-6] or name
     return name
 
@@ -77,6 +78,7 @@ class AiohttpApiSpec:
         prefix: str = "",
         schema_name_resolver: SchemaNameResolver = resolver,
         openapi_version: str | OpenApiVersion = OpenApiVersion.V20,
+        swagger_layout: LayoutOption = LayoutOption.Standalone,
         **kwargs: Any,
     ):
         try:
@@ -89,7 +91,7 @@ class AiohttpApiSpec:
             openapi_version=openapi_version.value, schema_name_resolver=schema_name_resolver, **kwargs
         )
         self._route_processor = RouteProcessor(self._spec_manager, prefix=prefix)
-        self._swagger_ui = SwaggerUIManager(url=url, static_path=static_path)
+        self._swagger_ui = SwaggerUIManager(url=url, static_path=static_path, layout=swagger_layout)
 
         # Store configuration
         self.url = url
@@ -184,6 +186,7 @@ def setup_apispec_aiohttp(
     prefix: str = "",
     schema_name_resolver: SchemaNameResolver = resolver,
     openapi_version: str | OpenApiVersion = OpenApiVersion.V20,
+    swagger_layout: LayoutOption = LayoutOption.Standalone,
     **kwargs: Any,
 ) -> AiohttpApiSpec:
     """
@@ -250,6 +253,8 @@ def setup_apispec_aiohttp(
     :param prefix: prefix to add to all registered routes
     :param schema_name_resolver: custom schema_name_resolver for MarshmallowPlugin.
     :param openapi_version: version of OpenAPI schema
+    :param swagger_layout: layout of Swagger UI (``LayoutOption.Standalone`` by default).
+                            See ``LayoutOption`` for more details.
     :param kwargs: any apispec.APISpec kwargs
     :return: return instance of AiohttpApiSpec class
     :rtype: AiohttpApiSpec
@@ -267,5 +272,6 @@ def setup_apispec_aiohttp(
         prefix=prefix,
         schema_name_resolver=schema_name_resolver,
         openapi_version=openapi_version,
+        swagger_layout=swagger_layout,
         **kwargs,
     )

@@ -95,6 +95,7 @@ def request_schema(
     options = {"required": kwargs.pop("required", False)}
 
     def wrapper(func: T) -> T:
+        # TODO: make __apispec__ and __schemas__ typed objects in 1.x release
         if not hasattr(func, "__apispec__"):
             func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore[attr-defined]
             func.__schemas__: list[ValidationSchema] = []  # type: ignore

@@ -91,6 +91,7 @@ def docs(  # noqa: C901
     kwargs.update(custom_attrs)
 
     def wrapper(func: T) -> T:
+        # TODO: make __apispec__ and __schemas__ typed objects in 1.x release
         if not hasattr(func, "__apispec__"):
             func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore
             func.__schemas__ = []  # type: ignore

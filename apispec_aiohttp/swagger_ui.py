@@ -1,3 +1,4 @@
+import enum
 import os
 from pathlib import Path
 from string import Template
@@ -14,14 +15,21 @@ NAME_SWAGGER_DOCS = "swagger.docs"
 NAME_SWAGGER_STATIC = "swagger.static"
 
 
+@enum.unique
+class LayoutOption(str, enum.Enum):
+    Base = "BaseLayout"
+    Standalone = "StandaloneLayout"
+
+
 class SwaggerUIManager:
     """Manages the Swagger UI setup and rendering."""
 
-    __slots__ = ("_index_page", "_static_path", "_url")
+    __slots__ = ("_index_page", "_layout", "_static_path", "_url")
 
-    def __init__(self, url: str, static_path: str = "/static/swagger"):
+    def __init__(self, url: str, static_path: str = "/static/swagger", layout: LayoutOption = LayoutOption.Standalone):
         self._url = url
         self._static_path = static_path
+        self._layout = layout
         self._index_page: str | None = None
 
     def setup(self, app: web.Application, swagger_path: str) -> None:
@@ -50,6 +58,7 @@ class SwaggerUIManager:
             self._index_page = Template(swg_tmp.read()).substitute(
                 path=url,
                 static=static_path,
+                layout=self._layout.value,
             )
 
         assert self._index_page is not None  # for mypy
