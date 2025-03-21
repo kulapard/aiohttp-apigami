@@ -6,7 +6,8 @@ from aiohttp.typedefs import Handler
 from marshmallow import Schema, fields
 
 from apispec_aiohttp import docs, request_schema, response_schema
-from apispec_aiohttp.aiohttp import HandlerSchema
+from apispec_aiohttp.core import ValidationSchema
+from apispec_aiohttp.decorators.request import ValidLocations
 
 
 class RequestSchema(Schema):
@@ -95,42 +96,12 @@ class TestViewDecorators:
         assert hasattr(aiohttp_view_kwargs, "__schemas__")
         assert len(aiohttp_view_kwargs.__schemas__) == 1
         schema = aiohttp_view_kwargs.__schemas__[0]
-        assert isinstance(schema, HandlerSchema)
+        assert isinstance(schema, ValidationSchema)
         assert isinstance(schema.schema, RequestSchema)
         assert schema.location == "querystring"
         assert schema.put_into is None
         for param in ("parameters", "responses"):
             assert param in aiohttp_view_kwargs.__apispec__
-
-    @pytest.mark.skip(reason="__apispec__ is not filled before starting the aiohttp server")
-    def test_request_schema_parameters(self, aiohttp_view_kwargs: Handler) -> None:
-        assert hasattr(aiohttp_view_kwargs, "__apispec__")
-        parameters = aiohttp_view_kwargs.__apispec__["parameters"]
-        assert sorted(parameters, key=lambda x: x["name"]) == [
-            {"in": "query", "name": "bool_field", "required": False, "type": "boolean"},
-            {
-                "in": "query",
-                "name": "id",
-                "required": False,
-                "type": "integer",
-                "format": "int32",
-            },
-            {
-                "in": "query",
-                "name": "list_field",
-                "required": False,
-                "collectionFormat": "multi",
-                "type": "array",
-                "items": {"type": "integer", "format": "int32"},
-            },
-            {
-                "in": "query",
-                "name": "name",
-                "required": False,
-                "type": "string",
-                "description": "name",
-            },
-        ]
 
     def test_marshalling(self, aiohttp_view_marshal: Handler) -> None:
         assert hasattr(aiohttp_view_marshal, "__apispec__")
@@ -219,4 +190,37 @@ class TestViewDecorators:
                 return web.json_response({"msg": "done", "data": {}})
 
         assert isinstance(ex.value, RuntimeError)
-        assert str(ex.value) == "Multiple json locations are not allowed"
+        assert str(ex.value) == "Multiple `json` locations are not allowed"
+
+    @pytest.mark.parametrize(
+        "location",
+        [
+            "querystring",
+            "cookies",
+            "headers",
+            "form",
+            "match_info",
+            "path",
+        ],
+    )
+    def test_multiple_locations_not_allowed(self, location: str) -> None:
+        """Test that using the same location multiple times raises a specific error."""
+
+        # Type cast to help mypy understand we're using valid locations
+        location_cast: ValidLocations = location  # type: ignore
+
+        with pytest.raises(RuntimeError) as ex:
+
+            @request_schema(RequestSchema, location=location_cast)
+            @request_schema(RequestSchema, location=location_cast)
+            async def index(request: web.Request, **data: Any) -> web.Response:
+                return web.json_response({"msg": "done", "data": {}})
+
+        assert isinstance(ex.value, RuntimeError)
+        assert str(ex.value) == f"Multiple `{location}` locations are not allowed"
+
+        # Test that different locations work fine
+        @request_schema(RequestSchema, location=location_cast)
+        @request_schema(RequestSchema, location="json")  # Different location
+        async def valid_index(request: web.Request, **data: Any) -> web.Response:
+            return web.json_response({"msg": "done", "data": {}})

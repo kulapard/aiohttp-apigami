@@ -19,3 +19,5 @@
 .env
 uv.lock
 ai/
+coverage.xml
+junit.xml

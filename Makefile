@@ -1,5 +1,6 @@
 include .env
 
+all: lint test
 
 # Install dependencies
 deps:
@@ -15,7 +16,7 @@ publish:
 	uv publish --verbose --token ${PYPI_API_TOKEN}
 
 mypy:
-	uv run --with pip mypy .
+	uv run mypy .
 
 pre-commit:
 	uv run pre-commit run --all-files
