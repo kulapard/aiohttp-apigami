@@ -3,7 +3,7 @@ from typing import Any, cast
 from aiohttp import web
 from aiohttp.typedefs import Handler
 
-from .aiohttp import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, HandlerSchema
+from .core import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, HandlerSchema
 from .utils import is_class_based_view
 
 

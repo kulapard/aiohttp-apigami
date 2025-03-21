@@ -3,9 +3,13 @@
 from collections.abc import Awaitable, Callable
 from typing import Any, Protocol
 
+import marshmallow as m
 from aiohttp import web
 
 HandlerType = Callable[..., Awaitable[web.StreamResponse]]
+AiohttpView = Callable[[web.Request], Awaitable[web.StreamResponse]]
+SchemaType = type[m.Schema] | m.Schema | str
+SchemaNameResolver = Callable[[type[m.Schema]], str]
 
 
 class IHandler(Protocol):

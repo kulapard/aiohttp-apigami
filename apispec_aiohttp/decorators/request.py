@@ -3,9 +3,9 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any, Literal, TypeVar
 
-import marshmallow as ma
+import marshmallow as m
 
-from apispec_aiohttp.aiohttp import HandlerSchema
+from apispec_aiohttp.core import HandlerSchema
 from apispec_aiohttp.typedefs import HandlerType
 
 # Locations supported by both openapi and webargs.aiohttpparser
@@ -37,7 +37,7 @@ T = TypeVar("T", bound=HandlerType)
 
 
 def request_schema(
-    schema: ma.Schema | type[ma.Schema],
+    schema: m.Schema | type[m.Schema],
     location: ValidLocations = "json",
     put_into: str | None = None,
     example: dict[str, Any] | None = None,
@@ -86,7 +86,7 @@ def request_schema(
     if location not in VALID_SCHEMA_LOCATIONS:
         raise ValueError(f"Invalid location argument: {location}")
 
-    schema_instance: ma.Schema
+    schema_instance: m.Schema
     if callable(schema):
         schema_instance = schema()
     else:
