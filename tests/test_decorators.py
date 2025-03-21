@@ -102,36 +102,6 @@ class TestViewDecorators:
         for param in ("parameters", "responses"):
             assert param in aiohttp_view_kwargs.__apispec__
 
-    @pytest.mark.skip(reason="__apispec__ is not filled before starting the aiohttp server")
-    def test_request_schema_parameters(self, aiohttp_view_kwargs: Handler) -> None:
-        assert hasattr(aiohttp_view_kwargs, "__apispec__")
-        parameters = aiohttp_view_kwargs.__apispec__["parameters"]
-        assert sorted(parameters, key=lambda x: x["name"]) == [
-            {"in": "query", "name": "bool_field", "required": False, "type": "boolean"},
-            {
-                "in": "query",
-                "name": "id",
-                "required": False,
-                "type": "integer",
-                "format": "int32",
-            },
-            {
-                "in": "query",
-                "name": "list_field",
-                "required": False,
-                "collectionFormat": "multi",
-                "type": "array",
-                "items": {"type": "integer", "format": "int32"},
-            },
-            {
-                "in": "query",
-                "name": "name",
-                "required": False,
-                "type": "string",
-                "description": "name",
-            },
-        ]
-
     def test_marshalling(self, aiohttp_view_marshal: Handler) -> None:
         assert hasattr(aiohttp_view_marshal, "__apispec__")
         for param in ("parameters", "responses"):
