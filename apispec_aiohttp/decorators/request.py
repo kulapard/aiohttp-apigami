@@ -5,8 +5,9 @@ from typing import Any, Literal, TypeVar
 
 import marshmallow as m
 
-from apispec_aiohttp.core import ValidationSchema
-from apispec_aiohttp.typedefs import HandlerType
+from apispec_aiohttp.typedefs import HandlerType, SchemaType
+from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas
+from apispec_aiohttp.validation import ValidationSchema
 
 # Locations supported by both openapi and webargs.aiohttpparser
 ValidLocations = Literal[
@@ -37,7 +38,7 @@ T = TypeVar("T", bound=HandlerType)
 
 
 def request_schema(
-    schema: m.Schema | type[m.Schema],
+    schema: SchemaType,
     location: ValidLocations = "json",
     put_into: str | None = None,
     example: dict[str, Any] | None = None,
@@ -79,7 +80,7 @@ def request_schema(
     :param dict example: Adding example for current schema
     :param bool add_to_refs: Working only if example not None,
                              if True, add example for ref schema.
-                             Otherwise add example to endpoint.
+                             Otherwise, add example to endpoint.
                              Default False
     """
 
@@ -87,26 +88,19 @@ def request_schema(
         raise ValueError(f"Invalid location argument: {location}")
 
     schema_instance: m.Schema
-    if callable(schema):
-        schema_instance = schema()
-    else:
-        schema_instance = schema
+    schema_instance = schema() if callable(schema) else schema
 
     options = {"required": kwargs.pop("required", False)}
 
     def wrapper(func: T) -> T:
-        # TODO: make __apispec__ and __schemas__ typed objects in 1.x release
-        if not hasattr(func, "__apispec__"):
-            func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore[attr-defined]
-            func.__schemas__: list[ValidationSchema] = []  # type: ignore
-
-        func_schemas: list[ValidationSchema] = func.__schemas__  # type: ignore
+        func_apispec = get_or_set_apispec(func)
+        func_schemas = get_or_set_schemas(func)
 
         _example = copy.copy(example) or {}
         if _example:
             _example["add_to_refs"] = add_to_refs
 
-        func.__apispec__["schemas"].append(  # type: ignore
+        func_apispec["schemas"].append(
             {
                 "schema": schema_instance,
                 "location": location,

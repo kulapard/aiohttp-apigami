@@ -1,35 +1,19 @@
 import enum
 import logging.config
-from dataclasses import dataclass
 from typing import Any
 
-import marshmallow as m
 from aiohttp import web
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin, common
-from webargs.aiohttpparser import AIOHTTPParser, parser
+from webargs.aiohttpparser import parser
 
+from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, SWAGGER_DICT
 from .route_processor import RouteProcessor
 from .spec import SpecManager
 from .swagger_ui import NAME_SWAGGER_SPEC, LayoutOption, SwaggerUIManager
 from .typedefs import SchemaNameResolver, SchemaType
 
 logger = logging.getLogger(__name__)
-
-# Constants
-APISPEC_VALIDATED_DATA_NAME = web.AppKey("_apispec_validated_data_name", str)
-APISPEC_PARSER = web.AppKey("_apispec_parser", AIOHTTPParser)
-
-# TODO: make it web.AppKey in 1.x release
-# Leave as a string for backward compatibility with 0.x
-SWAGGER_DICT = "swagger_dict"
-
-
-@dataclass
-class ValidationSchema:
-    schema: m.Schema
-    location: str
-    put_into: str | None = None
 
 
 def resolver(schema: SchemaType) -> str:

@@ -6,6 +6,7 @@ from aiohttp.hdrs import METH_ALL, METH_ANY
 from apispec.core import VALID_METHODS_OPENAPI_V2
 from apispec.ext.marshmallow import common
 
+from .constants import API_SPEC_ATTR
 from .spec import SpecManager
 from .typedefs import HandlerType, SchemaType
 from .utils import get_path, get_path_keys, is_class_based_view
@@ -76,14 +77,14 @@ class RouteProcessor:
 
     def register_route(self, *, route: web.AbstractRoute, method: str, handler: HandlerType) -> None:
         """Register a single route."""
-        if not hasattr(handler, "__apispec__"):
+        if not hasattr(handler, API_SPEC_ATTR):
             return None
 
         url_path = get_path(route)
         if not url_path:
             return None
 
-        handle_apispec = getattr(handler, "__apispec__", {})
+        handle_apispec = getattr(handler, API_SPEC_ATTR, {})
         self.update_paths(path=self._prefix + url_path, method=method, handler_apispec=handle_apispec)
 
     def update_paths(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:

@@ -3,8 +3,9 @@ from typing import Any, cast
 from aiohttp import web
 from aiohttp.typedefs import Handler
 
-from .core import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, ValidationSchema
+from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, SCHEMAS_ATTR
 from .utils import is_class_based_view
+from .validation import ValidationSchema
 
 
 def _get_handler_schemas(request: web.Request) -> list[ValidationSchema] | None:
@@ -13,13 +14,15 @@ def _get_handler_schemas(request: web.Request) -> list[ValidationSchema] | None:
     """
     handler = request.match_info.handler
 
-    if hasattr(handler, "__schemas__"):
-        return cast(list[ValidationSchema], handler.__schemas__)
+    # Function-based view
+    if hasattr(handler, SCHEMAS_ATTR):
+        return cast(list[ValidationSchema], getattr(handler, SCHEMAS_ATTR))
 
+    # Class-based view
     if is_class_based_view(handler):
         sub_handler = getattr(handler, request.method.lower(), None)
-        if sub_handler and hasattr(sub_handler, "__schemas__"):
-            return cast(list[ValidationSchema], sub_handler.__schemas__)
+        if sub_handler and hasattr(sub_handler, SCHEMAS_ATTR):
+            return cast(list[ValidationSchema], getattr(sub_handler, SCHEMAS_ATTR))
 
     return None
 
@@ -29,8 +32,8 @@ async def _get_validated_data(request: web.Request, schema: ValidationSchema) ->
     Parse and validate request data using the schema
     """
     return await request.app[APISPEC_PARSER].parse(
-        schema.schema,
-        request,
+        argmap=schema.schema,
+        req=request,
         location=schema.location,
         unknown=None,  # Pass None to use the schema`s setting instead.
     )

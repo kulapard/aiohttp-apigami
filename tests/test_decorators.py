@@ -6,8 +6,8 @@ from aiohttp.typedefs import Handler
 from marshmallow import Schema, fields
 
 from apispec_aiohttp import docs, request_schema, response_schema
-from apispec_aiohttp.core import ValidationSchema
 from apispec_aiohttp.decorators.request import ValidLocations
+from apispec_aiohttp.validation import ValidationSchema
 
 
 class RequestSchema(Schema):
