@@ -175,22 +175,16 @@ async def test_app_swagger_json(aiohttp_app: Any, example_for_request_schema: di
 
 
 @pytest.mark.asyncio
-async def test_not_register_route_for_none_url() -> None:
+async def test_not_register_route_for_empty_url() -> None:
     app = web.Application()
-    routes_count = len(app.router.routes())
-    # Using cast to bypass the type checking - in AiohttpApiSpec, url can be None
-    setup_apispec_aiohttp(app=app, url=None)  # type: ignore
-    routes_count_after_setup_apispec = len(app.router.routes())
-    assert routes_count == routes_count_after_setup_apispec
+    assert len(app.router.routes()) == 0
+    setup_apispec_aiohttp(app=app, url="")
+    assert len(app.router.routes()) == 0
 
 
 @pytest.mark.asyncio
 async def test_register_route_for_relative_url() -> None:
     app = web.Application()
-    routes_count = len(app.router.routes())
-    assert routes_count == 0
+    assert len(app.router.routes()) == 0
     setup_apispec_aiohttp(app=app, url="api/swagger")
-    # new route should be registered according to AiohttpApispec.register() method?
-    routes_count_after_setup_apispec = len(app.router.routes())
-    # not sure why there was a comparison between the old rount_count vs new_route_count
-    assert routes_count_after_setup_apispec == 1
+    assert len(app.router.routes()) == 2  # GET and HEAD

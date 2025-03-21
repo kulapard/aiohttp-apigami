@@ -127,11 +127,11 @@ class AiohttpApiSpec:
         self._registered = True
 
         # Add Swagger spec endpoint
-        if self.url is not None:
+        if self.url:
             self._setup_spec_endpoint(app, self.url)
 
             # Set up Swagger UI if path is provided
-            if self.swagger_path is not None:
+            if self.swagger_path:
                 self._swagger_ui.setup(app, self.swagger_path)
 
     def _register_on_startup(self, app: web.Application) -> None:
@@ -153,7 +153,7 @@ class AiohttpApiSpec:
             return web.json_response(request.app[SWAGGER_DICT])
 
         spec_path = spec_path if spec_path.startswith("/") else f"/{spec_path}"
-        app.router.add_route("GET", spec_path, swagger_handler, name=NAME_SWAGGER_SPEC)
+        app.router.add_get(spec_path, swagger_handler, name=NAME_SWAGGER_SPEC)
 
 
 def setup_apispec_aiohttp(
