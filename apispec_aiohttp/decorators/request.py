@@ -5,7 +5,7 @@ from typing import Any, Literal, TypeVar
 
 import marshmallow as m
 
-from apispec_aiohttp.core import HandlerSchema
+from apispec_aiohttp.core import ValidationSchema
 from apispec_aiohttp.typedefs import HandlerType
 
 # Locations supported by both openapi and webargs.aiohttpparser
@@ -97,9 +97,9 @@ def request_schema(
     def wrapper(func: T) -> T:
         if not hasattr(func, "__apispec__"):
             func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore[attr-defined]
-            func.__schemas__: list[HandlerSchema] = []  # type: ignore
+            func.__schemas__: list[ValidationSchema] = []  # type: ignore
 
-        func_schemas: list[HandlerSchema] = func.__schemas__  # type: ignore
+        func_schemas: list[ValidationSchema] = func.__schemas__  # type: ignore
 
         _example = copy.copy(example) or {}
         if _example:
@@ -119,7 +119,7 @@ def request_schema(
             raise RuntimeError("Multiple json locations are not allowed")
 
         func_schemas.append(
-            HandlerSchema(
+            ValidationSchema(
                 schema=schema_instance,
                 location=location,
                 put_into=put_into,

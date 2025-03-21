@@ -27,7 +27,7 @@ SWAGGER_DICT = "swagger_dict"
 
 
 @dataclass
-class HandlerSchema:
+class ValidationSchema:
     schema: m.Schema
     location: str
     put_into: str | None = None

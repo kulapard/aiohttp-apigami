@@ -6,7 +6,7 @@ from aiohttp.typedefs import Handler
 from marshmallow import Schema, fields
 
 from apispec_aiohttp import docs, request_schema, response_schema
-from apispec_aiohttp.core import HandlerSchema
+from apispec_aiohttp.core import ValidationSchema
 
 
 class RequestSchema(Schema):
@@ -95,7 +95,7 @@ class TestViewDecorators:
         assert hasattr(aiohttp_view_kwargs, "__schemas__")
         assert len(aiohttp_view_kwargs.__schemas__) == 1
         schema = aiohttp_view_kwargs.__schemas__[0]
-        assert isinstance(schema, HandlerSchema)
+        assert isinstance(schema, ValidationSchema)
         assert isinstance(schema.schema, RequestSchema)
         assert schema.location == "querystring"
         assert schema.put_into is None

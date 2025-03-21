@@ -3,28 +3,28 @@ from typing import Any, cast
 from aiohttp import web
 from aiohttp.typedefs import Handler
 
-from .core import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, HandlerSchema
+from .core import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, ValidationSchema
 from .utils import is_class_based_view
 
 
-def _get_handler_schemas(request: web.Request) -> list[HandlerSchema] | None:
+def _get_handler_schemas(request: web.Request) -> list[ValidationSchema] | None:
     """
     Get schemas from the request handler
     """
     handler = request.match_info.handler
 
     if hasattr(handler, "__schemas__"):
-        return cast(list[HandlerSchema], handler.__schemas__)
+        return cast(list[ValidationSchema], handler.__schemas__)
 
     if is_class_based_view(handler):
         sub_handler = getattr(handler, request.method.lower(), None)
         if sub_handler and hasattr(sub_handler, "__schemas__"):
-            return cast(list[HandlerSchema], sub_handler.__schemas__)
+            return cast(list[ValidationSchema], sub_handler.__schemas__)
 
     return None
 
 
-async def _get_validated_data(request: web.Request, schema: HandlerSchema) -> Any | None:
+async def _get_validated_data(request: web.Request, schema: ValidationSchema) -> Any | None:
     """
     Parse and validate request data using the schema
     """
