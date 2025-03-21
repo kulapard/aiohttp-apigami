@@ -55,7 +55,7 @@ INDEX_JAVASCRIPT = """
         plugins: [
           SwaggerUIBundle.plugins.DownloadUrl
         ],
-        layout: "BaseLayout",
+        layout: "$layout",
       });
       // End Swagger UI call region
     };
