@@ -6,7 +6,7 @@ from aiohttp.typedefs import Handler
 from marshmallow import Schema, fields
 
 from apispec_aiohttp import docs, request_schema, response_schema
-from apispec_aiohttp.aiohttp import HandlerSchema
+from apispec_aiohttp.core import HandlerSchema
 
 
 class RequestSchema(Schema):
