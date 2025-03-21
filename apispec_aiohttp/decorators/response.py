@@ -3,13 +3,14 @@ from typing import TypeVar
 
 import marshmallow as m
 
-from apispec_aiohttp.typedefs import HandlerType
+from apispec_aiohttp.typedefs import HandlerType, SchemaType
+from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas
 
 T = TypeVar("T", bound=HandlerType)
 
 
 def response_schema(
-    schema: type[m.Schema] | m.Schema,
+    schema: SchemaType,
     code: int = 200,
     required: bool = False,
     description: str | None = None,
@@ -40,17 +41,13 @@ def response_schema(
     :param int code: HTTP response code
     """
     schema_instance: m.Schema
-    if callable(schema):
-        schema_instance = schema()
-    else:
-        schema_instance = schema
+    schema_instance = schema() if callable(schema) else schema
 
     def wrapper(func: T) -> T:
-        # TODO: make __apispec__ and __schemas__ typed objects in 1.x release
-        if not hasattr(func, "__apispec__"):
-            func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore[attr-defined]
-            func.__schemas__ = []  # type: ignore[attr-defined]
-        func.__apispec__["responses"][f"{code}"] = {  # type: ignore[attr-defined]
+        func_apispec = get_or_set_apispec(func)
+        get_or_set_schemas(func)  # just to make sure schemas are initialized
+
+        func_apispec["responses"][str(code)] = {
             "schema": schema_instance,
             "required": required,
             "description": description or "",

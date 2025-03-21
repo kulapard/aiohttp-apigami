@@ -2,6 +2,7 @@ from collections.abc import Callable
 from typing import Any, TypeVar
 
 from apispec_aiohttp.typedefs import HandlerType
+from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas
 
 T = TypeVar("T", bound=HandlerType)
 
@@ -12,7 +13,7 @@ ResponsesSpec = dict[int, ResponseSpec]
 TagType = str
 
 
-def docs(  # noqa: C901
+def docs(
     *,
     tags: list[TagType] | None = None,
     summary: str | None = None,
@@ -91,20 +92,16 @@ def docs(  # noqa: C901
     kwargs.update(custom_attrs)
 
     def wrapper(func: T) -> T:
-        # TODO: make __apispec__ and __schemas__ typed objects in 1.x release
-        if not hasattr(func, "__apispec__"):
-            func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore
-            func.__schemas__ = []  # type: ignore
+        func_apispec = get_or_set_apispec(func)
+        get_or_set_schemas(func)  # just to make sure schemas are initialized
 
-        # Get attributes and add new data (using getattr to satisfy type checker)
-        api_spec = getattr(func, "__apispec__", {})
         extra_parameters = parameters or []
         extra_responses = responses or {}
 
         # Update the function's apispec attributes
-        api_spec["parameters"].extend(extra_parameters)
-        api_spec["responses"].update(extra_responses)
-        api_spec.update(kwargs)
+        func_apispec["parameters"].extend(extra_parameters)
+        func_apispec["responses"].update(extra_responses)
+        func_apispec.update(kwargs)
 
         return func
 
