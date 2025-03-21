@@ -24,7 +24,7 @@ Think of **apispec-aiohttp** as the bridge between your aiohttp web services and
 - **Decorator-driven API**: Simple `@docs` and `@request_schema` decorators add Swagger/OpenAPI support to your existing code
 - **Granular Request Validation**: Specialized decorators for headers, query params, JSON body, etc.
 - **Middleware Integration**: Easy validation with `validation_middleware`
-- **Built-in Swagger UI**: Ready-to-use interactive documentation (currently v5.20.1)
+- **Built-in Swagger UI**: Ready-to-use interactive documentation (currently <!-- SWAGGER_UI_VERSION_START -->[v5.20.1](https://github.com/swagger-api/swagger-ui/releases/tag/v5.20.1)<!-- SWAGGER_UI_VERSION_END -->)
 - **Class-Based View Support**: Fully compatible with aiohttp's CBV pattern
 
 > 💡 **apispec-aiohttp** builds upon the foundation of `aiohttp-apispec` (no longer maintained), with inspiration from the `flask-apispec` library.
@@ -305,7 +305,8 @@ Then navigate to `/docs` in your browser to see the interactive API documentatio
 
 ## 🔄 Updating Swagger UI
 
-This package includes Swagger UI v5.20.1. Updates are managed through:
+This package includes Swagger UI <!-- SWAGGER_UI_VERSION_START -->[v5.20.1](https://github.com/swagger-api/swagger-ui/releases/tag/v5.20.1)<!-- SWAGGER_UI_VERSION_END -->.
+Updates are managed through:
 
 1. **Automated Checks**: A weekly GitHub workflow checks for new Swagger UI versions and creates PRs
 2. **Manual Updates**: Run `make update-swagger-ui` or `python tools/update_swagger_ui.py`
