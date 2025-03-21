@@ -27,7 +27,7 @@ class RouteProcessor:
         """Convert a schema to OpenAPI parameters."""
         return self._spec_manager.schema2parameters(schema, location=location, **kwargs)
 
-    def add_examples(
+    def add_example(
         self, *, schema: SchemaType, parameters: list[dict[str, Any]], example: dict[str, Any] | None
     ) -> None:
         """Add examples to schema or endpoint."""
@@ -92,16 +92,18 @@ class RouteProcessor:
             parameters = self.schema2parameters(
                 schema=schema_instance, location=schema["location"], **schema["options"]
             )
-            self.add_examples(schema=schema_instance, parameters=parameters, example=schema["example"])
+            self.add_example(schema=schema_instance, parameters=parameters, example=schema["example"])
             handler_apispec["parameters"].extend(parameters)
 
-        existing = [p["name"] for p in handler_apispec["parameters"] if p["in"] == "path"]
-        handler_apispec["parameters"].extend(
-            {"in": "path", "name": path_key, "required": True, "type": "string"}
-            for path_key in get_path_keys(path)
-            if path_key not in existing
-        )
+        # Update path keys if they are not already present in the handler_apispec
+        existing_path_keys = {p["name"] for p in handler_apispec["parameters"] if p["in"] == "path"}
+        new_path_keys = (path_key for path_key in get_path_keys(path) if path_key not in existing_path_keys)
+        new_path_keys_params = [
+            {"in": "path", "name": path_key, "required": True, "type": "string"} for path_key in new_path_keys
+        ]
+        handler_apispec["parameters"].extend(new_path_keys_params)
 
+        #
         if "responses" in handler_apispec:
             handler_apispec["responses"] = self._process_responses(handler_apispec["responses"])
 
