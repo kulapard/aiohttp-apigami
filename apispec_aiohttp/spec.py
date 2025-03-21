@@ -3,8 +3,9 @@ from typing import Any
 from apispec import APISpec
 from apispec.core import Components
 from apispec.ext.marshmallow import MarshmallowPlugin
+from packaging.version import Version
 
-from .typedefs import SchemaNameResolver
+from .typedefs import SchemaNameResolver, SchemaType
 
 
 class SpecManager:
@@ -39,45 +40,48 @@ class SpecManager:
         """Returns swagger spec representation in JSON format"""
         return self._spec.to_dict()
 
-    def update_path(self, *, path: str, method: str, view_apispec: dict[str, Any]) -> None:
+    def app_path(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
         """Add a new path to the spec."""
-        self._spec.path(path=path, operations={method: view_apispec})
+        self._spec.path(path=path, operations={method: handler_apispec})
 
     @property
     def components(self) -> Components:
-        """Get access to spec components."""
+        """Get access to spec components.
+
+        This is a wrapper around the spec.components property.
+        """
         return self._spec.components
 
     @property
-    def schemas(self) -> dict[str, Any]:
+    def schemas(self) -> dict[str, dict[str, Any]]:
         """Get access to spec schemas.
 
-        This is a wrapper around the spec.components.schemas dictionary.
+        This is a wrapper around the spec.components.schemas dictionary property.
         """
         return self._spec.components.schemas
 
     @property
-    def openapi_version(self) -> Any:
+    def openapi_version(self) -> Version:
         """Get access to spec's OpenAPI version.
 
         This is a wrapper around the spec.components.openapi_version property.
         """
         return self._spec.components.openapi_version
 
-    def schema2parameters(self, schema: Any, location: str, **kwargs: Any) -> list[dict[str, Any]]:
+    def schema2parameters(self, schema: SchemaType, location: str, **kwargs: Any) -> list[dict[str, Any]]:
         """Convert a schema to OpenAPI parameters.
 
         This is a wrapper around the plugin's converter.schema2parameters method.
         """
-        result = self._plugin.converter.schema2parameters(  # type: ignore[union-attr]
-            schema, location=location, **kwargs
+        parameters = self._plugin.converter.schema2parameters(  # type: ignore[union-attr]
+            schema=schema, location=location, **kwargs
         )
-        return result  # type: ignore[no-any-return]
+        return parameters  # type: ignore[no-any-return]
 
     def get_schema_name(self, schema_instance: Any) -> str:
         """Get the schema name using the configured resolver.
 
         This is a wrapper around the plugin's converter.schema_name_resolver method.
         """
-        result = self._plugin.converter.schema_name_resolver(schema_instance)  # type: ignore[union-attr]
-        return result  # type: ignore[no-any-return]
+        schema_name = self._plugin.converter.schema_name_resolver(schema_instance)  # type: ignore[union-attr]
+        return schema_name  # type: ignore[no-any-return]

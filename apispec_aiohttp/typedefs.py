@@ -7,8 +7,7 @@ import marshmallow as m
 from aiohttp import web
 
 HandlerType = Callable[..., Awaitable[web.StreamResponse]]
-AiohttpView = Callable[[web.Request], Awaitable[web.StreamResponse]]
-SchemaType = type[m.Schema] | m.Schema | str
+SchemaType = type[m.Schema] | m.Schema
 SchemaNameResolver = Callable[[type[m.Schema]], str]
 
 

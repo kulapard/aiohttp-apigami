@@ -39,15 +39,18 @@ def response_schema(
     :param schema: :class:`Schema <marshmallow.Schema>` class or instance
     :param int code: HTTP response code
     """
+    schema_instance: m.Schema
     if callable(schema):
-        schema = schema()
+        schema_instance = schema()
+    else:
+        schema_instance = schema
 
     def wrapper(func: T) -> T:
         if not hasattr(func, "__apispec__"):
             func.__apispec__ = {"schemas": [], "responses": {}, "parameters": []}  # type: ignore[attr-defined]
             func.__schemas__ = []  # type: ignore[attr-defined]
         func.__apispec__["responses"][f"{code}"] = {  # type: ignore[attr-defined]
-            "schema": schema,
+            "schema": schema_instance,
             "required": required,
             "description": description or "",
         }
