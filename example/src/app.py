@@ -3,6 +3,7 @@
 from aiohttp import web
 
 from apispec_aiohttp import setup_apispec_aiohttp, validation_middleware
+from apispec_aiohttp.swagger_ui import LayoutOption
 
 from .routes import setup_routes
 
@@ -14,7 +15,9 @@ def create_app() -> web.Application:
     # In real life, you should use a database
     app["users"] = {}
 
-    setup_apispec_aiohttp(app, title="User API", version="0.0.1", swagger_path="/api/docs")
+    setup_apispec_aiohttp(
+        app, title="User API", version="0.0.1", swagger_path="/api/docs", swagger_layout=LayoutOption.Standalone
+    )
     app.middlewares.append(validation_middleware)
 
     return app
