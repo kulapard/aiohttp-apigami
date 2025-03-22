@@ -149,11 +149,11 @@ class AiohttpApiSpec:
 
     @staticmethod
     def _setup_spec_endpoint(app: web.Application, spec_path: str) -> None:
-        async def swagger_handler(request: web.Request) -> web.Response:
+        async def spec_handler(request: web.Request) -> web.Response:
             return web.json_response(request.app[SWAGGER_DICT])
 
         spec_path = spec_path if spec_path.startswith("/") else f"/{spec_path}"
-        app.router.add_get(spec_path, swagger_handler, name=NAME_SWAGGER_SPEC)
+        app.router.add_get(spec_path, spec_handler, name=NAME_SWAGGER_SPEC)
 
 
 def setup_apispec_aiohttp(
