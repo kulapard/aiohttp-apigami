@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.18.0,<2.0.0","hatch-vcs>=0.4.0,<1.0.0"]
+requires = ["hatchling>=1.18.0,<2.0.0", "hatch-vcs>=0.4.0,<1.0.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
@@ -11,9 +11,9 @@ dynamic = ["version"]
 description = "API documentation and validation for aiohttp using apispec"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
+license = { text = "Apache-2.0" }
 authors = [
-    {name = "Taras Drapalyuk", email = "taras@drapalyuk.com"}
+    { name = "Taras Drapalyuk", email = "taras@drapalyuk.com" }
 ]
 keywords = ["aiohttp", "marshmallow", "apispec", "swagger", "openapi", "schema", "validation", "documentation"]
 classifiers = [
