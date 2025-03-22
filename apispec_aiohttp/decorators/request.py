@@ -50,7 +50,7 @@ def request_schema(
     webargs arguments into the decorated view function in
     request['data'] for validation_middleware validation middleware.
 
-    Usage:
+    Usage with Marshmallow Schema:
 
     .. code-block:: python
 
@@ -71,7 +71,31 @@ def request_schema(
                 {"name": data["name"], "id": data["id"]}
             )
 
-    :param schema: :class:`Schema <marshmallow.Schema>` class or instance
+    Usage with Python dataclasses:
+
+    .. code-block:: python
+
+        from dataclasses import dataclass
+        from aiohttp import web
+
+
+        @dataclass
+        class RequestData:
+            id: int
+            name: str
+
+
+        @request_schema(RequestData)
+        async def index(request):
+            # data is a RequestData instance
+            data: RequestData = request["data"]
+            return web.json_response(
+                {"name": data.name, "id": data.id}
+            )
+
+    :param schema: :class:`Schema <marshmallow.Schema>` class or instance,
+                   or a Python dataclass. When using dataclasses, the
+                   marshmallow-recipe package is required.
     :param location: Default request locations to parse
     :param put_into: name of the key in Request object
                      where validated data will be placed.

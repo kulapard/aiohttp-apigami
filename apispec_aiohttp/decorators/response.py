@@ -17,7 +17,7 @@ def response_schema(
     """
     Add response info into the swagger spec
 
-    Usage:
+    Usage with Marshmallow Schema:
 
     .. code-block:: python
 
@@ -34,9 +34,30 @@ def response_schema(
         async def index(request):
             return web.json_response({"msg": "done", "data": {}})
 
+    Usage with Python dataclasses:
+
+    .. code-block:: python
+
+        from dataclasses import dataclass, field
+        from typing import Any
+        from aiohttp import web
+
+
+        @dataclass
+        class ResponseData:
+            msg: str
+            data: dict[str, Any] = field(default_factory=dict)
+
+
+        @response_schema(ResponseData, 200)
+        async def index(request):
+            return web.json_response({"msg": "done", "data": {}})
+
     :param str description: response description
     :param bool required:
-    :param schema: :class:`Schema <marshmallow.Schema>` class or instance
+    :param schema: :class:`Schema <marshmallow.Schema>` class or instance,
+                  or a Python dataclass. When using dataclasses, the
+                  marshmallow-recipe package is required.
     :param int code: HTTP response code
     """
     schema_instance = resolve_schema_instance(schema)
