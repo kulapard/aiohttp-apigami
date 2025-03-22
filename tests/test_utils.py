@@ -116,6 +116,7 @@ class TestIsClassBasedView:
 class TestResolveSchemaInstance:
     def test_with_schema_class(self) -> None:
         """Test with a Schema class."""
+
         class TestSchema(m.Schema):
             field = m.fields.String()
 
@@ -125,6 +126,7 @@ class TestResolveSchemaInstance:
 
     def test_with_schema_instance(self) -> None:
         """Test with a Schema instance."""
+
         class TestSchema(m.Schema):
             field = m.fields.String()
 
@@ -135,6 +137,7 @@ class TestResolveSchemaInstance:
     @patch("apispec_aiohttp.utils.mr")
     def test_with_dataclass(self, mock_mr: Mock) -> None:
         """Test with a dataclass."""
+
         @dataclass
         class TestDataclass:
             field: str
@@ -149,6 +152,7 @@ class TestResolveSchemaInstance:
     @patch("apispec_aiohttp.utils.mr", None)
     def test_with_dataclass_no_marshmallow_recipe(self) -> None:
         """Test with a dataclass but without marshmallow-recipe."""
+
         @dataclass
         class TestDataclass:
             field: str

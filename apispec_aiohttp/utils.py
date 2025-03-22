@@ -69,7 +69,10 @@ def resolve_schema_instance(schema: SchemaType | type[TDataclass]) -> m.Schema:
         return schema
     if is_dataclass(schema):
         if mr is None:
-            raise RuntimeError("marshmallow-recipe is required for dataclass support")
+            raise RuntimeError(
+                "marshmallow-recipe is required for dataclass support. "
+                "Install it with `pip install apispec-aiohttp[dataclass]`."
+            )
         return mr.schema(schema)
 
     raise ValueError(f"Invalid schema type: {schema}")
