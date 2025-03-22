@@ -1,16 +1,15 @@
 from collections.abc import Callable
 from typing import TypeVar
 
-import marshmallow as m
-
-from apispec_aiohttp.typedefs import HandlerType, SchemaType
-from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas
+from apispec_aiohttp.typedefs import HandlerType, IDataclass, SchemaType
+from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas, resolve_schema_instance
 
 T = TypeVar("T", bound=HandlerType)
+TDataclass = TypeVar("TDataclass", bound=IDataclass)
 
 
 def response_schema(
-    schema: SchemaType,
+    schema: SchemaType | type[TDataclass],
     code: int = 200,
     required: bool = False,
     description: str | None = None,
@@ -40,8 +39,7 @@ def response_schema(
     :param schema: :class:`Schema <marshmallow.Schema>` class or instance
     :param int code: HTTP response code
     """
-    schema_instance: m.Schema
-    schema_instance = schema() if callable(schema) else schema
+    schema_instance = resolve_schema_instance(schema)
 
     def wrapper(func: T) -> T:
         func_apispec = get_or_set_apispec(func)
