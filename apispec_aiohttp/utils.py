@@ -15,7 +15,7 @@ from .validation import ValidationSchema
 try:
     import marshmallow_recipe as mr
 
-except ImportError:
+except ImportError:  # pragma: no cover
     mr = None  # type: ignore
 
 T = TypeVar("T")

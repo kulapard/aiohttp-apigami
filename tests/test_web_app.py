@@ -191,3 +191,87 @@ async def test_swagger_static(aiohttp_app: Any) -> None:
     assert (await aiohttp_app.get("/static/swagger/swagger-ui.css")).status == 200 or (
         await aiohttp_app.get("/v1/static/swagger/swagger-ui.css")
     ).status == 200
+
+
+async def test_dataclass_success(aiohttp_app: Any, example_for_request_dataclass: dict[str, Any]) -> None:
+    """Test successful request with dataclass handler."""
+    res = await aiohttp_app.post("/v1/dataclass", json=example_for_request_dataclass)
+    assert res.status == 200
+    json_data = await res.json()
+    assert json_data["msg"] == "done"
+    assert json_data["data"]["id"] == example_for_request_dataclass["id"]
+    assert json_data["data"]["name"] == example_for_request_dataclass["name"]
+    assert json_data["data"]["is_active"] == example_for_request_dataclass["bool_field"]
+
+
+async def test_dataclass_validation_error(aiohttp_app: Any) -> None:
+    """Test validation error with dataclass handler."""
+    # Missing required fields
+    res = await aiohttp_app.post("/v1/dataclass", json={"id": "not_an_int"})
+    assert res.status == 400
+    error_data = await res.json()
+    assert "errors" in error_data
+
+    # Test with invalid data type
+    invalid_data = {
+        "id": "not_an_integer",  # should be int
+        "name": 123,  # should be string
+        "bool_field": "not_a_boolean",  # should be boolean
+        "list_field": "not_a_list",  # should be list
+    }
+    res = await aiohttp_app.post("/v1/dataclass", json=invalid_data)
+    assert res.status == 400
+    error_data = await res.json()
+    assert "errors" in error_data
+
+
+async def test_dataclass_in_swagger_docs(aiohttp_app: Any) -> None:
+    """Test that dataclass endpoint is correctly documented in Swagger."""
+    # Get the Swagger JSON
+    res = await aiohttp_app.get("/v1/api/docs/api-docs")
+    assert res.status == 200
+    swagger_json = await res.json()
+
+    # Verify that the dataclass endpoint and schema exist somewhere in the swagger docs
+    paths = swagger_json["paths"]
+    dataclass_path = None
+
+    # Find the dataclass endpoint in the swagger docs
+    for path, methods in paths.items():
+        if "post" in methods and "tags" in methods["post"] and "dataclass" in methods["post"]["tags"]:
+            dataclass_path = path
+            break
+
+    assert dataclass_path is not None, "Dataclass endpoint not found in Swagger docs"
+
+    # Get the post spec for the dataclass endpoint
+    post_spec = paths[dataclass_path]["post"]
+
+    # Verify tags and summary
+    assert "dataclass" in post_spec["tags"]
+    assert post_spec["summary"] == "Test dataclass handler"
+
+    # Verify request schema exists (Swagger 2.0 format)
+    assert "parameters" in post_spec
+    body_param = None
+    for param in post_spec["parameters"]:
+        if param["in"] == "body":
+            body_param = param
+            break
+    assert body_param is not None, "No body parameter found in Swagger docs"
+    assert "schema" in body_param
+    assert "$ref" in body_param["schema"]
+    assert "RequestDataclass" in body_param["schema"]["$ref"]
+
+    # Verify response schema exists
+    assert "responses" in post_spec
+    assert "200" in post_spec["responses"]
+    assert post_spec["responses"]["200"]["description"] == "Success response with dataclass"
+    assert "schema" in post_spec["responses"]["200"]
+    assert "$ref" in post_spec["responses"]["200"]["schema"]
+    assert "ResponseDataclass" in post_spec["responses"]["200"]["schema"]["$ref"]
+
+    # Also verify that the definitions include our dataclass schemas
+    assert "definitions" in swagger_json
+    assert "RequestDataclass" in swagger_json["definitions"]
+    assert "ResponseDataclass" in swagger_json["definitions"]

@@ -83,14 +83,3 @@ docstring-code-line-length = 60
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-v --cov=apispec_aiohttp --cov-branch --cov-report=xml --junitxml=junit.xml"
-
-[tool.coverage.report]
-exclude_also = [
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
