@@ -3,10 +3,8 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any, Literal, TypeVar
 
-import marshmallow as m
-
-from apispec_aiohttp.typedefs import HandlerType, SchemaType
-from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas
+from apispec_aiohttp.typedefs import HandlerType, IDataclass, SchemaType
+from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas, resolve_schema_instance
 from apispec_aiohttp.validation import ValidationSchema
 
 # Locations supported by both openapi and webargs.aiohttpparser
@@ -35,10 +33,11 @@ VALID_SCHEMA_LOCATIONS = (
 )
 
 T = TypeVar("T", bound=HandlerType)
+TDataclass = TypeVar("TDataclass", bound=IDataclass)
 
 
 def request_schema(
-    schema: SchemaType,
+    schema: SchemaType | type[TDataclass],
     location: ValidLocations = "json",
     put_into: str | None = None,
     example: dict[str, Any] | None = None,
@@ -87,8 +86,7 @@ def request_schema(
     if location not in VALID_SCHEMA_LOCATIONS:
         raise ValueError(f"Invalid location argument: {location}")
 
-    schema_instance: m.Schema
-    schema_instance = schema() if callable(schema) else schema
+    schema_instance = resolve_schema_instance(schema)
 
     options = {"required": kwargs.pop("required", False)}
 

@@ -1,11 +1,19 @@
+from dataclasses import dataclass
 from typing import cast
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
+import marshmallow as m
+import pytest
 from aiohttp import web
 from aiohttp.test_utils import TestClient
 from aiohttp.web import AbstractRoute
 
-from apispec_aiohttp.utils import get_path, get_path_keys, is_class_based_view
+from apispec_aiohttp.utils import (
+    get_path,
+    get_path_keys,
+    is_class_based_view,
+    resolve_schema_instance,
+)
 
 
 def _find_simple_route(aiohttp_app: TestClient) -> web.AbstractRoute | None:  # type: ignore[type-arg]
@@ -103,3 +111,56 @@ class TestIsClassBasedView:
             pass
 
         assert not is_class_based_view(NotAView)  # type: ignore[arg-type]
+
+
+class TestResolveSchemaInstance:
+    def test_with_schema_class(self) -> None:
+        """Test with a Schema class."""
+
+        class TestSchema(m.Schema):
+            field = m.fields.String()
+
+        schema = resolve_schema_instance(TestSchema)
+        assert isinstance(schema, m.Schema)
+        assert isinstance(schema, TestSchema)
+
+    def test_with_schema_instance(self) -> None:
+        """Test with a Schema instance."""
+
+        class TestSchema(m.Schema):
+            field = m.fields.String()
+
+        schema_instance = TestSchema()
+        result = resolve_schema_instance(schema_instance)
+        assert result is schema_instance
+
+    @patch("apispec_aiohttp.utils.mr")
+    def test_with_dataclass(self, mock_mr: Mock) -> None:
+        """Test with a dataclass."""
+
+        @dataclass
+        class TestDataclass:
+            field: str
+
+        mock_schema = Mock(spec=m.Schema)
+        mock_mr.schema.return_value = mock_schema
+
+        result = resolve_schema_instance(TestDataclass)
+        assert result is mock_schema
+        mock_mr.schema.assert_called_once_with(TestDataclass)
+
+    @patch("apispec_aiohttp.utils.mr", None)
+    def test_with_dataclass_no_marshmallow_recipe(self) -> None:
+        """Test with a dataclass but without marshmallow-recipe."""
+
+        @dataclass
+        class TestDataclass:
+            field: str
+
+        with pytest.raises(RuntimeError, match="marshmallow-recipe is required for dataclass support"):
+            resolve_schema_instance(TestDataclass)
+
+    def test_with_invalid_schema(self) -> None:
+        """Test with an invalid schema type."""
+        with pytest.raises(ValueError, match="Invalid schema type:"):
+            resolve_schema_instance("not a schema")  # type: ignore[arg-type]

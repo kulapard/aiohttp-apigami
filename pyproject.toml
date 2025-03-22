@@ -31,6 +31,11 @@ dependencies = [
     "apispec>=5.0.1,<7.0.0",
     "webargs>=8.0.1,<9.0.0",
     "marshmallow>=3.0.1,<4.0.0",
+    "marshmallow-recipe>=0.0.42",
+]
+[project.optional-dependencies]
+dataclass = [
+    "marshmallow-recipe>=0.0.39,<1.0.0"
 ]
 
 [dependency-groups]

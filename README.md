@@ -26,6 +26,7 @@ Think of **apispec-aiohttp** as the bridge between your aiohttp web services and
 - **Middleware Integration**: Easy validation with `validation_middleware`
 - **Built-in Swagger UI**: Ready-to-use interactive documentation (currently <!-- SWAGGER_UI_VERSION_START -->[v5.20.1](https://github.com/swagger-api/swagger-ui/releases/tag/v5.20.1)<!-- SWAGGER_UI_VERSION_END -->)
 - **Class-Based View Support**: Fully compatible with aiohttp's CBV pattern
+- **Dataclass Support**: Use Python dataclasses directly as schemas for cleaner code
 
 > 💡 **apispec-aiohttp** builds upon the foundation of `aiohttp-apispec` (no longer maintained), with inspiration from the `flask-apispec` library.
 
@@ -48,6 +49,7 @@ pip install apispec-aiohttp
 - apispec 5.0+
 - webargs 8.0+
 - marshmallow 3.0+
+- marshmallow-recipe (optional, required for dataclass support)
 
 ## 🧩 Core Components
 
@@ -236,6 +238,59 @@ async def create_user(request: web.Request):
     json_data = request["json"]  # Validated JSON
     query_params = request["querystring"]  # Validated query parameters
     # ...
+```
+
+## 🔄 Using Dataclasses
+
+Python dataclasses provide a cleaner and more concise way to define request and response schemas:
+
+```python
+from dataclasses import dataclass, field
+from typing import Any
+from aiohttp import web
+from apispec_aiohttp import docs, request_schema, response_schema
+
+@dataclass
+class NestedData:
+    id: int
+    name: str
+
+@dataclass
+class RequestData:
+    id: int
+    name: str
+    is_active: bool
+    tags: list[str]
+    nested: NestedData | None = None
+
+@dataclass
+class ResponseData:
+    message: str
+    data: dict[str, Any] = field(default_factory=dict)
+
+@docs(tags=["example"], summary="Dataclass example")
+@request_schema(RequestData)  # Use dataclass directly
+@response_schema(ResponseData, 200, description="Success")
+async def dataclass_handler(request: web.Request):
+    # data is an instance of RequestData, not a dictionary
+    data: RequestData = request["data"]  # Validated data as a dataclass instance
+
+    return web.json_response({
+        "message": "Success",
+        "data": {"id": data.id, "name": data.name}  # Access fields as object attributes
+    })
+```
+
+When using dataclasses with apispec-aiohttp, the validated data is available in the request as actual dataclass instances, not dictionaries. This provides proper type hints and attribute access, improving code readability and IDE support.
+
+Dataclass support requires the `marshmallow-recipe` package. To install it:
+
+```bash
+uv add "apispec-aiohttp[dataclass]"
+```
+or with pip:
+```bash
+pip install apispec-aiohttp[dataclass]
 ```
 
 ## 🛡️ Custom Error Handling

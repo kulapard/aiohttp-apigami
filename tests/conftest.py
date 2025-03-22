@@ -1,4 +1,5 @@
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
@@ -53,6 +54,26 @@ class ResponseSchema(Schema):
     data = fields.Dict()
 
 
+@dataclass
+class NestedDataclass:
+    i: int
+
+
+@dataclass
+class RequestDataclass:
+    id: int
+    name: str
+    bool_field: bool
+    list_field: list[int]
+    nested_field: NestedDataclass | None = None
+
+
+@dataclass
+class ResponseDataclass:
+    msg: str
+    data: dict[str, Any] = field(default_factory=dict)
+
+
 class MyException(Exception):
     def __init__(self, message: dict[str, Any]) -> None:
         self.message = message
@@ -66,6 +87,17 @@ def example_for_request_schema() -> dict[str, Any]:
         "bool_field": True,
         "list_field": [1, 2, 3],
         "nested_field": {"i": 12},
+    }
+
+
+@pytest.fixture
+def example_for_request_dataclass() -> dict[str, Any]:
+    return {
+        "id": 2,
+        "name": "dataclass_test",
+        "bool_field": True,
+        "list_field": [4, 5, 6],
+        "nested_field": {"i": 42},
     }
 
 
@@ -94,6 +126,20 @@ async def aiohttp_app(  # noqa: C901
     @response_schema(ResponseSchema, 200, description="Success response")
     async def handler_get(request: web.Request) -> web.Response:
         return web.json_response({"msg": "done", "data": {}})
+
+    @docs(
+        tags=["dataclass"],
+        summary="Test dataclass handler",
+        description="Test handler using dataclasses",
+    )
+    @request_schema(RequestDataclass, location="json")
+    @response_schema(ResponseDataclass, 200, description="Success response with dataclass")
+    async def handler_dataclass(request: web.Request) -> web.Response:
+        # Access data as a dataclass instance
+        data: RequestDataclass = request["data"]
+        return web.json_response(
+            {"msg": "done", "data": {"id": data.id, "name": data.name, "is_active": data.bool_field}}
+        )
 
     @request_schema(RequestSchema)
     async def handler_post(request: web.Request) -> web.Response:
@@ -206,6 +252,7 @@ async def aiohttp_app(  # noqa: C901
                 web.post("/echo", handler_post_echo),
                 web.get("/variable/{var}", handler_get_variable),
                 web.post("/validate/{uuid}", validated_view),
+                web.post("/dataclass", handler_dataclass),
             ]
         )
         v1.middlewares.extend([intercept_error, validation_middleware])
@@ -231,6 +278,7 @@ async def aiohttp_app(  # noqa: C901
                 web.post("/v1/echo", handler_post_echo),
                 web.get("/v1/variable/{var}", handler_get_variable),
                 web.post("/v1/validate/{uuid}", validated_view),
+                web.post("/v1/dataclass", handler_dataclass),
             ]
         )
         app.middlewares.extend([intercept_error, validation_middleware])
