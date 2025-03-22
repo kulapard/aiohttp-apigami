@@ -15,9 +15,11 @@ def response_schema(
     description: str | None = None,
 ) -> Callable[[T], T]:
     """
-    Add response info into the swagger spec
+    Add response info into the swagger spec for OpenAPI documentation.
 
-    Usage with Marshmallow Schema:
+    ┌───────────────────────────────────────────────────────────────┐
+    │ Usage with Marshmallow Schema                                 │
+    └───────────────────────────────────────────────────────────────┘
 
     .. code-block:: python
 
@@ -34,7 +36,9 @@ def response_schema(
         async def index(request):
             return web.json_response({"msg": "done", "data": {}})
 
-    Usage with Python dataclasses:
+    ┌───────────────────────────────────────────────────────────────┐
+    │ Usage with Python dataclasses                                 │
+    └───────────────────────────────────────────────────────────────┘
 
     .. code-block:: python
 
@@ -53,12 +57,21 @@ def response_schema(
         async def index(request):
             return web.json_response({"msg": "done", "data": {}})
 
-    :param str description: response description
-    :param bool required:
-    :param schema: :class:`Schema <marshmallow.Schema>` class or instance,
-                  or a Python dataclass. When using dataclasses, the
-                  marshmallow-recipe package is required.
-    :param int code: HTTP response code
+    Parameters
+    ----------
+    schema : Schema or dataclass
+        :class:`Schema <marshmallow.Schema>` class or instance,
+        or a Python dataclass. When using dataclasses, the
+        marshmallow-recipe package is required.
+
+    code : int, default=200
+        HTTP response code
+
+    required : bool, default=False
+        Whether this response is required
+
+    description : str, optional
+        Response description for OpenAPI documentation
     """
     schema_instance = resolve_schema_instance(schema)
 
