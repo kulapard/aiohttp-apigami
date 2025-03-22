@@ -246,7 +246,7 @@ Python dataclasses provide a cleaner and more concise way to define request and 
 
 ```python
 from dataclasses import dataclass, field
-from typing import list, optional, dict, Any
+from typing import Any
 from aiohttp import web
 from apispec_aiohttp import docs, request_schema, response_schema
 
@@ -261,7 +261,7 @@ class RequestData:
     name: str
     is_active: bool
     tags: list[str]
-    nested: optional[NestedData] = None
+    nested: NestedData | None = None
 
 @dataclass
 class ResponseData:
