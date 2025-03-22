@@ -143,7 +143,7 @@ class AiohttpApiSpec:
         app.on_startup.append(_async_register)
 
     def _register(self, app: web.Application) -> None:
-        """RRegister routes and generate API spec immediately"""
+        """Register routes and generate API spec immediately"""
         self._route_processor.register_routes(app)
         app[SWAGGER_DICT] = self.swagger_dict()
 

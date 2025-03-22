@@ -14,12 +14,17 @@ from .decorators import (
     response_schema,
 )
 from .middlewares import validation_middleware
+from .processors import BaseOpenAPIProcessor, OpenAPIv2Processor, OpenAPIv3Processor, create_processor
 
 __all__ = [
     "AiohttpApiSpec",
+    "BaseOpenAPIProcessor",
+    "OpenAPIv2Processor",
+    "OpenAPIv3Processor",
     "OpenApiVersion",
     "__version__",
     "cookies_schema",
+    "create_processor",
     "docs",
     "form_schema",
     "headers_schema",
