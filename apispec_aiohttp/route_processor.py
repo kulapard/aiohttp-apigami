@@ -113,7 +113,7 @@ class RouteProcessor:
             handler_apispec["responses"] = self._process_responses(handler_apispec["responses"])
 
         handler_apispec = copy.deepcopy(handler_apispec)
-        self._spec_manager.app_path(path=path, method=method, handler_apispec=handler_apispec)
+        self._spec_manager.add_path(path=path, method=method, handler_apispec=handler_apispec)
 
     def _process_responses(self, responses_data: dict[str, Any]) -> dict[str, Any]:
         """Process response schemas for the spec."""

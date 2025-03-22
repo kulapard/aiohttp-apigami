@@ -1,7 +1,6 @@
 from typing import Any
 
 from apispec import APISpec
-from apispec.core import Components
 from apispec.ext.marshmallow import MarshmallowPlugin
 from packaging.version import Version
 
@@ -40,17 +39,9 @@ class SpecManager:
         """Returns swagger spec representation in JSON format"""
         return self._spec.to_dict()
 
-    def app_path(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
+    def add_path(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
         """Add a new path to the spec."""
         self._spec.path(path=path, operations={method: handler_apispec})
-
-    @property
-    def components(self) -> Components:
-        """Get access to spec components.
-
-        This is a wrapper around the spec.components property.
-        """
-        return self._spec.components
 
     @property
     def schemas(self) -> dict[str, dict[str, Any]]:
