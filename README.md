@@ -272,12 +272,16 @@ class ResponseData:
 @request_schema(RequestData)  # Use dataclass directly
 @response_schema(ResponseData, 200, description="Success")
 async def dataclass_handler(request: web.Request):
-    data = request["data"]  # Validated data
+    # data is an instance of RequestData, not a dictionary
+    data: RequestData = request["data"]  # Validated data as a dataclass instance
+
     return web.json_response({
         "message": "Success",
-        "data": {"id": data["id"], "name": data["name"]}
+        "data": {"id": data.id, "name": data.name}  # Access fields as object attributes
     })
 ```
+
+When using dataclasses with apispec-aiohttp, the validated data is available in the request as actual dataclass instances, not dictionaries. This provides proper type hints and attribute access, improving code readability and IDE support.
 
 Dataclass support requires the `marshmallow-recipe` package. To install it:
 
