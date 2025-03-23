@@ -60,6 +60,7 @@ class RouteProcessor:
     def register_route(self, route: RouteData) -> None:
         """Register a single route."""
         if not hasattr(route.handler, API_SPEC_ATTR):
+            # No OpenAPI data found in the handler
             return None
 
         handler_apispec = getattr(route.handler, API_SPEC_ATTR)
@@ -67,5 +68,8 @@ class RouteProcessor:
         handler_apispec = self._processor.get_path_operations(
             path=full_path, method=route.method, handler_apispec=handler_apispec
         )
-        if handler_apispec is not None:
-            self._spec_manager.add_path(path=full_path, method=route.method, handler_apispec=handler_apispec)
+        if handler_apispec is None:
+            # No OpenAPI data found in the handler
+            return None
+
+        self._spec_manager.add_path(path=full_path, method=route.method, handler_apispec=handler_apispec)
