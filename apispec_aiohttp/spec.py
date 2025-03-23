@@ -8,7 +8,11 @@ from .typedefs import SchemaNameResolver, SchemaType
 
 
 class SpecManager:
-    """Manages the OpenAPI specification creation and manipulation."""
+    """Manages the OpenAPI specification creation and manipulation.
+
+    :param options: Optional top-level keys
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
+    """
 
     __slots__ = ("_plugin", "_spec")
 
@@ -16,13 +20,13 @@ class SpecManager:
         self,
         openapi_version: str,
         schema_name_resolver: SchemaNameResolver,
-        **kwargs: Any,
+        **options: Any,
     ):
         self._plugin = MarshmallowPlugin(schema_name_resolver=schema_name_resolver)
         self._spec = APISpec(
             plugins=(self._plugin,),
             openapi_version=openapi_version,
-            **kwargs,
+            **options,
         )
 
     @property

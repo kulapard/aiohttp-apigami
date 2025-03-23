@@ -1,5 +1,5 @@
 from aiohttp import web
-from aiohttp.hdrs import METH_ALL, METH_ANY
+from aiohttp.hdrs import METH_ALL
 
 from .constants import API_SPEC_ATTR
 from .processors import create_processor
@@ -23,7 +23,7 @@ class RouteProcessor:
         for route in app.router.routes():
             # Class based views have multiple methods
             # Register each method separately
-            if is_class_based_view(route.handler) and route.method == METH_ANY:
+            if is_class_based_view(route.handler):
                 for attr in dir(route.handler):
                     if attr.upper() in METH_ALL:
                         method = attr
@@ -45,7 +45,7 @@ class RouteProcessor:
         if not url_path:
             return None
 
-        handler_apispec = getattr(handler, API_SPEC_ATTR, {})
+        handler_apispec = getattr(handler, API_SPEC_ATTR)
         full_path = self._prefix + url_path
         handler_apispec = self._processor.get_path_operations(
             path=full_path, method=method, handler_apispec=handler_apispec
