@@ -2,8 +2,8 @@
 
 from aiohttp import web
 
-from apispec_aiohttp import OpenApiVersion, setup_apispec_aiohttp, validation_middleware
-from apispec_aiohttp.swagger_ui import LayoutOption
+from aiohttp_apigami import OpenApiVersion, setup_apispec_aiohttp, validation_middleware
+from aiohttp_apigami.swagger_ui import LayoutOption
 
 from .routes import setup_routes
 

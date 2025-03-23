@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from typing import TypeVar
 
-from apispec_aiohttp.typedefs import HandlerType, IDataclass, SchemaType
-from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas, resolve_schema_instance
+from aiohttp_apigami.typedefs import HandlerType, IDataclass, SchemaType
+from aiohttp_apigami.utils import get_or_set_apispec, get_or_set_schemas, resolve_schema_instance
 
 T = TypeVar("T", bound=HandlerType)
 TDataclass = TypeVar("TDataclass", bound=IDataclass)

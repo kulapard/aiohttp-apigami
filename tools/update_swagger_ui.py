@@ -22,7 +22,7 @@ from pathlib import Path
 
 import requests
 
-from apispec_aiohttp.swagger_ui import SWAGGER_UI_STATIC_FILES, SWAGGER_UI_VERSION_PATH
+from aiohttp_apigami.swagger_ui import SWAGGER_UI_STATIC_FILES, SWAGGER_UI_VERSION_PATH
 
 # Configure logging
 logging.basicConfig(

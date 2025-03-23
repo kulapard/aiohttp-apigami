@@ -29,7 +29,7 @@ jobs:
       - name: Get current version of Swagger UI
         id: current_version
         run: |
-          VERSION=$(cat apispec_aiohttp/swagger_ui/VERSION)
+          VERSION=$(cat aiohttp_apigami/swagger_ui/VERSION)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Run update Swagger UI to latest version
@@ -40,7 +40,7 @@ jobs:
       - name: Get updated version of Swagger UI
         id: updated_version
         run: |
-          VERSION=$(cat apispec_aiohttp/swagger_ui/VERSION)
+          VERSION=$(cat aiohttp_apigami/swagger_ui/VERSION)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Run pre-commit

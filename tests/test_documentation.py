@@ -6,7 +6,7 @@ from aiohttp import web
 from aiohttp.web_urldispatcher import AbstractRoute, StaticResource
 from yarl import URL
 
-from apispec_aiohttp import setup_apispec_aiohttp
+from aiohttp_apigami import setup_apispec_aiohttp
 
 
 async def test_app_swagger_url(aiohttp_app: Any) -> None:
