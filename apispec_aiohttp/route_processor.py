@@ -72,4 +72,5 @@ class RouteProcessor:
             # No OpenAPI data found in the handler
             return None
 
+        # Add path spec to the main spec
         self._spec_manager.add_path(path=full_path, method=route.method, handler_apispec=handler_apispec)
