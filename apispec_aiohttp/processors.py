@@ -20,7 +20,7 @@ class BaseOpenAPIProcessor(ABC):
         self._spec_manager = spec_manager
 
     @abstractmethod
-    def get_path_operations(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> dict[str, Any] | None:
+    def get_path_method_spec(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> dict[str, Any] | None:
         """Get path operations based on OpenAPI version."""
         ...
 
@@ -28,7 +28,7 @@ class BaseOpenAPIProcessor(ABC):
 class OpenAPIv2Processor(BaseOpenAPIProcessor):
     """Processor for OpenAPI v2.x specifications."""
 
-    def get_path_operations(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> dict[str, Any] | None:
+    def get_path_method_spec(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> dict[str, Any] | None:
         if method not in VALID_METHODS_OPENAPI_V2:
             return None
 
@@ -112,7 +112,7 @@ class OpenAPIv2Processor(BaseOpenAPIProcessor):
 class OpenAPIv3Processor(BaseOpenAPIProcessor):
     """Processor for OpenAPI v3.x specifications."""
 
-    def get_path_operations(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> dict[str, Any] | None:
+    def get_path_method_spec(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> dict[str, Any] | None:
         if method not in VALID_METHODS_OPENAPI_V3:
             return None
 

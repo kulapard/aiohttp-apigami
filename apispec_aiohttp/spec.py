@@ -43,7 +43,7 @@ class SpecManager:
         """Returns swagger spec representation in JSON format"""
         return self._spec.to_dict()
 
-    def add_path(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
+    def add_path_method(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
         """Add a new path to the spec."""
         self._spec.path(path=path, operations={method: handler_apispec})
 

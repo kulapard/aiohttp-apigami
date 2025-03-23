@@ -65,12 +65,12 @@ class RouteProcessor:
 
         handler_apispec = getattr(route.handler, API_SPEC_ATTR)
         full_path = self._prefix + route.path
-        handler_apispec = self._processor.get_path_operations(
+        handler_apispec = self._processor.get_path_method_spec(
             path=full_path, method=route.method, handler_apispec=handler_apispec
         )
         if handler_apispec is None:
             # No OpenAPI data found in the handler
             return None
 
-        # Add path spec to the main spec
-        self._spec_manager.add_path(path=full_path, method=route.method, handler_apispec=handler_apispec)
+        # Add path method spec to the main spec
+        self._spec_manager.add_path_method(path=full_path, method=route.method, handler_apispec=handler_apispec)
