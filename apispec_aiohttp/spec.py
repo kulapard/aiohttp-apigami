@@ -1,7 +1,6 @@
 from typing import Any
 
 from apispec import APISpec
-from apispec.core import Components
 from apispec.ext.marshmallow import MarshmallowPlugin
 from packaging.version import Version
 
@@ -9,7 +8,11 @@ from .typedefs import SchemaNameResolver, SchemaType
 
 
 class SpecManager:
-    """Manages the OpenAPI specification creation and manipulation."""
+    """Manages the OpenAPI specification creation and manipulation.
+
+    :param options: Optional top-level keys
+        See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#openapi-object
+    """
 
     __slots__ = ("_plugin", "_spec")
 
@@ -17,13 +20,13 @@ class SpecManager:
         self,
         openapi_version: str,
         schema_name_resolver: SchemaNameResolver,
-        **kwargs: Any,
+        **options: Any,
     ):
         self._plugin = MarshmallowPlugin(schema_name_resolver=schema_name_resolver)
         self._spec = APISpec(
             plugins=(self._plugin,),
             openapi_version=openapi_version,
-            **kwargs,
+            **options,
         )
 
     @property
@@ -40,17 +43,9 @@ class SpecManager:
         """Returns swagger spec representation in JSON format"""
         return self._spec.to_dict()
 
-    def app_path(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
+    def add_path_method(self, *, path: str, method: str, handler_apispec: dict[str, Any]) -> None:
         """Add a new path to the spec."""
         self._spec.path(path=path, operations={method: handler_apispec})
-
-    @property
-    def components(self) -> Components:
-        """Get access to spec components.
-
-        This is a wrapper around the spec.components property.
-        """
-        return self._spec.components
 
     @property
     def schemas(self) -> dict[str, dict[str, Any]]:

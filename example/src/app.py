@@ -2,7 +2,7 @@
 
 from aiohttp import web
 
-from apispec_aiohttp import setup_apispec_aiohttp, validation_middleware
+from apispec_aiohttp import OpenApiVersion, setup_apispec_aiohttp, validation_middleware
 from apispec_aiohttp.swagger_ui import LayoutOption
 
 from .routes import setup_routes
@@ -16,7 +16,12 @@ def create_app() -> web.Application:
     app["users"] = {}
 
     setup_apispec_aiohttp(
-        app, title="User API", version="0.0.1", swagger_path="/api/docs", swagger_layout=LayoutOption.Standalone
+        app,
+        title="User API",
+        version="0.0.1",
+        swagger_path="/api/docs",
+        swagger_layout=LayoutOption.Standalone,
+        openapi_version=OpenApiVersion.V20,
     )
     app.middlewares.append(validation_middleware)
 

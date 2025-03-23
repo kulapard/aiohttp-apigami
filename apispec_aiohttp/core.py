@@ -63,7 +63,7 @@ class AiohttpApiSpec:
         schema_name_resolver: SchemaNameResolver = resolver,
         openapi_version: str | OpenApiVersion = OpenApiVersion.V20,
         swagger_layout: LayoutOption = LayoutOption.Standalone,
-        **kwargs: Any,
+        **options: Any,
     ):
         try:
             openapi_version = OpenApiVersion(openapi_version)
@@ -72,7 +72,7 @@ class AiohttpApiSpec:
 
         # Initialize components
         self._spec_manager = SpecManager(
-            openapi_version=openapi_version.value, schema_name_resolver=schema_name_resolver, **kwargs
+            openapi_version=openapi_version.value, schema_name_resolver=schema_name_resolver, **options
         )
         self._route_processor = RouteProcessor(self._spec_manager, prefix=prefix)
         self._swagger_ui = SwaggerUIManager(url=url, static_path=static_path, layout=swagger_layout)
@@ -143,17 +143,17 @@ class AiohttpApiSpec:
         app.on_startup.append(_async_register)
 
     def _register(self, app: web.Application) -> None:
-        """RRegister routes and generate API spec immediately"""
+        """Register routes and generate API spec immediately"""
         self._route_processor.register_routes(app)
         app[SWAGGER_DICT] = self.swagger_dict()
 
     @staticmethod
     def _setup_spec_endpoint(app: web.Application, spec_path: str) -> None:
-        async def swagger_handler(request: web.Request) -> web.Response:
+        async def spec_handler(request: web.Request) -> web.Response:
             return web.json_response(request.app[SWAGGER_DICT])
 
         spec_path = spec_path if spec_path.startswith("/") else f"/{spec_path}"
-        app.router.add_get(spec_path, swagger_handler, name=NAME_SWAGGER_SPEC)
+        app.router.add_get(spec_path, spec_handler, name=NAME_SWAGGER_SPEC)
 
 
 def setup_apispec_aiohttp(
@@ -171,7 +171,7 @@ def setup_apispec_aiohttp(
     schema_name_resolver: SchemaNameResolver = resolver,
     openapi_version: str | OpenApiVersion = OpenApiVersion.V20,
     swagger_layout: LayoutOption = LayoutOption.Standalone,
-    **kwargs: Any,
+    **options: Any,
 ) -> AiohttpApiSpec:
     """
     apispec-aiohttp extension.
@@ -239,7 +239,7 @@ def setup_apispec_aiohttp(
     :param openapi_version: version of OpenAPI schema
     :param swagger_layout: layout of Swagger UI (``LayoutOption.Standalone`` by default).
                             See ``LayoutOption`` for more details.
-    :param kwargs: any apispec.APISpec kwargs
+    :param options: any apispec.APISpec options
     :return: return instance of AiohttpApiSpec class
     :rtype: AiohttpApiSpec
     """
@@ -257,5 +257,5 @@ def setup_apispec_aiohttp(
         schema_name_resolver=schema_name_resolver,
         openapi_version=openapi_version,
         swagger_layout=swagger_layout,
-        **kwargs,
+        **options,
     )
