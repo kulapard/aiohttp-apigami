@@ -183,7 +183,7 @@ def setup_aiohttp_apispec(
         from aiohttp_apigami import (
             docs,
             request_schema,
-            setup_apispec_aiohttp,
+            setup_aiohttp_apispec,
         )
         from aiohttp import web
         from marshmallow import Schema, fields
@@ -209,7 +209,7 @@ def setup_aiohttp_apispec(
         app.router.add_post("/v1/test", index)
 
         # init docs with all parameters, usual for ApiSpec
-        setup_apispec_aiohttp(
+        setup_aiohttp_apispec(
             app=app,
             title="My Documentation",
             version="v1",

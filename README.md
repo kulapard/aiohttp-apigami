@@ -191,7 +191,7 @@ You can change the request attribute where validated data is stored:
 
 ```python
 # Global setting
-setup_apispec_aiohttp(
+setup_aiohttp_apispec(
     app=app,
     request_data_name="validated_data",
 )
@@ -316,7 +316,7 @@ def my_error_handler(
         content_type="application/json",
     )
 
-setup_apispec_aiohttp(app, error_callback=my_error_handler)
+setup_aiohttp_apispec(app, error_callback=my_error_handler)
 ```
 
 You can also create custom exceptions and handle them in middleware:
@@ -342,7 +342,7 @@ async def intercept_error(request, handler):
         return web.json_response(e.message, status=400)
 
 # Configure error handler
-setup_apispec_aiohttp(app, error_callback=my_error_handler)
+setup_aiohttp_apispec(app, error_callback=my_error_handler)
 
 # Add your middleware BEFORE the validation middleware
 app.middlewares.extend([intercept_error, validation_middleware])
@@ -353,7 +353,7 @@ app.middlewares.extend([intercept_error, validation_middleware])
 Enable Swagger UI by adding the `swagger_path` parameter:
 
 ```python
-setup_apispec_aiohttp(app, swagger_path="/docs")
+setup_aiohttp_apispec(app, swagger_path="/docs")
 ```
 
 Then navigate to `/docs` in your browser to see the interactive API documentation.
