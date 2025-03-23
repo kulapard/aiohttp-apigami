@@ -1,7 +1,7 @@
 # mypy: disable-error-code="attr-defined"
 from importlib import metadata
 
-from .core import AiohttpApiSpec, OpenApiVersion, setup_apispec_aiohttp
+from .core import AiohttpApiSpec, OpenApiVersion, setup_aiohttp_apispec
 from .decorators import (
     cookies_schema,
     docs,
@@ -33,7 +33,7 @@ __all__ = [
     "querystring_schema",
     "request_schema",
     "response_schema",
-    "setup_apispec_aiohttp",
+    "setup_aiohttp_apispec",
     "validation_middleware",
 ]
 

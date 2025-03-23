@@ -6,7 +6,7 @@ from aiohttp import web
 from aiohttp.web_urldispatcher import AbstractRoute, StaticResource
 from yarl import URL
 
-from aiohttp_apigami import setup_apispec_aiohttp
+from aiohttp_apigami import setup_aiohttp_apispec
 
 
 async def test_app_swagger_url(aiohttp_app: Any) -> None:
@@ -173,7 +173,7 @@ async def test_app_swagger_json(aiohttp_app: Any, example_for_request_schema: di
 async def test_not_register_route_for_empty_url() -> None:
     app = web.Application()
     assert len(app.router.routes()) == 0
-    setup_apispec_aiohttp(app=app, url="")
+    setup_aiohttp_apispec(app=app, url="")
     assert len(app.router.routes()) == 0
 
 
@@ -181,5 +181,5 @@ async def test_not_register_route_for_empty_url() -> None:
 async def test_register_route_for_relative_url() -> None:
     app = web.Application()
     assert len(app.router.routes()) == 0
-    setup_apispec_aiohttp(app=app, url="api/swagger")
+    setup_aiohttp_apispec(app=app, url="api/swagger")
     assert len(app.router.routes()) == 2  # GET and HEAD
