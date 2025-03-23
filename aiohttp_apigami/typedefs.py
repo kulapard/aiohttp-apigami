@@ -1,4 +1,4 @@
-"""Type definitions for apispec-aiohttp."""
+"""Type definitions for aiohttp-apigami."""
 
 import dataclasses
 from collections.abc import Awaitable, Callable

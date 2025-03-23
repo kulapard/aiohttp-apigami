@@ -8,7 +8,7 @@ from aiohttp import web
 from aiohttp.test_utils import TestClient
 from aiohttp.web import AbstractRoute
 
-from apispec_aiohttp.utils import (
+from aiohttp_apigami.utils import (
     get_path,
     get_path_keys,
     is_class_based_view,
@@ -134,7 +134,7 @@ class TestResolveSchemaInstance:
         result = resolve_schema_instance(schema_instance)
         assert result is schema_instance
 
-    @patch("apispec_aiohttp.utils.mr")
+    @patch("aiohttp_apigami.utils.mr")
     def test_with_dataclass(self, mock_mr: Mock) -> None:
         """Test with a dataclass."""
 
@@ -149,7 +149,7 @@ class TestResolveSchemaInstance:
         assert result is mock_schema
         mock_mr.schema.assert_called_once_with(TestDataclass)
 
-    @patch("apispec_aiohttp.utils.mr", None)
+    @patch("aiohttp_apigami.utils.mr", None)
     def test_with_dataclass_no_marshmallow_recipe(self) -> None:
         """Test with a dataclass but without marshmallow-recipe."""
 

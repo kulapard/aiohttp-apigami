@@ -1,9 +1,9 @@
 # views.py
 from aiohttp import web
 
-from apispec_aiohttp import docs
-from apispec_aiohttp.decorators.request import json_schema, match_info_schema
-from apispec_aiohttp.decorators.response import response_schema
+from aiohttp_apigami import docs
+from aiohttp_apigami.decorators.request import json_schema, match_info_schema
+from aiohttp_apigami.decorators.response import response_schema
 
 from .schemas import GetUser, Message, User, UsersList
 

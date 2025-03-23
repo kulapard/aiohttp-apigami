@@ -5,9 +5,9 @@ from aiohttp import web
 from aiohttp.typedefs import Handler
 from marshmallow import Schema, fields
 
-from apispec_aiohttp import docs, request_schema, response_schema
-from apispec_aiohttp.decorators.request import ValidLocations
-from apispec_aiohttp.validation import ValidationSchema
+from aiohttp_apigami import docs, request_schema, response_schema
+from aiohttp_apigami.decorators.request import ValidLocations
+from aiohttp_apigami.validation import ValidationSchema
 
 
 class RequestSchema(Schema):

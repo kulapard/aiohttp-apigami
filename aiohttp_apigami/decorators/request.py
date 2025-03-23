@@ -3,9 +3,9 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any, Literal, TypeVar
 
-from apispec_aiohttp.typedefs import HandlerType, IDataclass, SchemaType
-from apispec_aiohttp.utils import get_or_set_apispec, get_or_set_schemas, resolve_schema_instance
-from apispec_aiohttp.validation import ValidationSchema
+from aiohttp_apigami.typedefs import HandlerType, IDataclass, SchemaType
+from aiohttp_apigami.utils import get_or_set_apispec, get_or_set_schemas, resolve_schema_instance
+from aiohttp_apigami.validation import ValidationSchema
 
 # Locations supported by both openapi and webargs.aiohttpparser
 ValidLocations = Literal[

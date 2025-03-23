@@ -1,20 +1,20 @@
-# apispec-aiohttp
+# aiohttp-apigami
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/kulapard/apispec-aiohttp/ci.yml?branch=master)
-[![codecov](https://codecov.io/github/kulapard/apispec-aiohttp/graph/badge.svg?token=Y5EJBF1F25)](https://codecov.io/github/kulapard/apispec-aiohttp)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/kulapard/apispec-aiohttp/master.svg)](https://results.pre-commit.ci/latest/github/kulapard/apispec-aiohttp/master)
-[![PyPI - Version](https://img.shields.io/pypi/v/apispec-aiohttp?color=%2334D058&label=pypi%20package)](https://pypi.org/project/apispec-aiohttp)
-[![PyPI Downloads](https://static.pepy.tech/badge/apispec-aiohttp)](https://pepy.tech/projects/apispec-aiohttp)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apispec-aiohttp)
-[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/kulapard/apispec-aiohttp/blob/master/LICENSE)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/kulapard/aiohttp-apigami/ci.yml?branch=master)
+[![codecov](https://codecov.io/github/kulapard/aiohttp-apigami/graph/badge.svg?token=Y5EJBF1F25)](https://codecov.io/github/kulapard/aiohttp-apigami)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/kulapard/aiohttp-apigami/master.svg)](https://results.pre-commit.ci/latest/github/kulapard/aiohttp-apigami/master)
+[![PyPI - Version](https://img.shields.io/pypi/v/aiohttp-apigami?color=%2334D058&label=pypi%20package)](https://pypi.org/project/aiohttp-apigami)
+[![PyPI Downloads](https://static.pepy.tech/badge/aiohttp-apigami)](https://pepy.tech/projects/aiohttp-apigami)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aiohttp-apigami)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/kulapard/aiohttp-apigami/blob/master/LICENSE)
 
 ---
 
-**apispec-aiohttp** brings seamless OpenAPI/Swagger integration and request validation to your [aiohttp](https://github.com/aio-libs/aiohttp) applications using [apispec](https://github.com/marshmallow-code/apispec) and [marshmallow](https://github.com/marshmallow-code/marshmallow).
+**aiohttp-apigami** brings seamless OpenAPI/Swagger integration and request validation to your [aiohttp](https://github.com/aio-libs/aiohttp) applications using [apispec](https://github.com/marshmallow-code/apispec) and [marshmallow](https://github.com/marshmallow-code/marshmallow).
 
 ## 📋 Overview
 
-Think of **apispec-aiohttp** as the bridge between your aiohttp web services and OpenAPI documentation. It solves two key challenges:
+Think of **aiohttp-apigami** as the bridge between your aiohttp web services and OpenAPI documentation. It solves two key challenges:
 
 1. **Documentation**: Automatically generate interactive OpenAPI/Swagger documentation from your route handlers
 2. **Validation**: Enforce request/response schema validation with minimal boilerplate code
@@ -28,18 +28,18 @@ Think of **apispec-aiohttp** as the bridge between your aiohttp web services and
 - **Class-Based View Support**: Fully compatible with aiohttp's CBV pattern
 - **Dataclass Support**: Use Python dataclasses directly as schemas for cleaner code
 
-> 💡 **apispec-aiohttp** builds upon the foundation of `aiohttp-apispec` (no longer maintained), with inspiration from the `flask-apispec` library.
+> 💡 **aiohttp-apigami** builds upon the foundation of `aiohttp-apispec` (no longer maintained), with inspiration from the `flask-apispec` library.
 
 ## 🚀 Installation
 
 With [uv](https://docs.astral.sh/uv/) package manager:
 ```bash
-uv add apispec-aiohttp
+uv add aiohttp-apigami
 ```
 
 Or with pip:
 ```bash
-pip install apispec-aiohttp
+pip install aiohttp-apigami
 ```
 
 ### Requirements
@@ -53,7 +53,7 @@ pip install apispec-aiohttp
 
 ## 🧩 Core Components
 
-**apispec-aiohttp** operates on three main building blocks:
+**aiohttp-apigami** operates on three main building blocks:
 
 1. **Decorators**: Add metadata and validation rules to your handlers
 2. **Middleware**: Process requests according to your schemas
@@ -62,7 +62,7 @@ pip install apispec-aiohttp
 ## 🔍 Quickstart Example
 
 ```python
-from apispec_aiohttp import (
+from aiohttp_apigami import (
     docs,
     request_schema,
     response_schema,
@@ -163,7 +163,7 @@ async def index(request):
 Enable validation with the middleware:
 
 ```python
-from apispec_aiohttp import validation_middleware
+from aiohttp_apigami import validation_middleware
 
 app.middlewares.append(validation_middleware)
 ```
@@ -248,7 +248,7 @@ Python dataclasses provide a cleaner and more concise way to define request and 
 from dataclasses import dataclass, field
 from typing import Any
 from aiohttp import web
-from apispec_aiohttp import docs, request_schema, response_schema
+from aiohttp_apigami import docs, request_schema, response_schema
 
 @dataclass
 class NestedData:
@@ -281,16 +281,16 @@ async def dataclass_handler(request: web.Request):
     })
 ```
 
-When using dataclasses with apispec-aiohttp, the validated data is available in the request as actual dataclass instances, not dictionaries. This provides proper type hints and attribute access, improving code readability and IDE support.
+When using dataclasses with aiohttp-apigami, the validated data is available in the request as actual dataclass instances, not dictionaries. This provides proper type hints and attribute access, improving code readability and IDE support.
 
 Dataclass support requires the `marshmallow-recipe` package. To install it:
 
 ```bash
-uv add "apispec-aiohttp[dataclass]"
+uv add "aiohttp-apigami[dataclass]"
 ```
 or with pip:
 ```bash
-pip install apispec-aiohttp[dataclass]
+pip install aiohttp-apigami[dataclass]
 ```
 
 ## 🛡️ Custom Error Handling
@@ -389,11 +389,11 @@ This library follows semantic versioning:
 - **Minor version**: New backward-compatible features
 - **Patch version**: Backward-compatible bug fixes
 
-See [GitHub releases](https://github.com/kulapard/apispec-aiohttp/releases) for version history.
+See [GitHub releases](https://github.com/kulapard/aiohttp-apigami/releases) for version history.
 
 ## 💬 Support
 
-If you encounter issues or have suggestions, please [open an issue](https://github.com/kulapard/apispec-aiohttp/issues).
+If you encounter issues or have suggestions, please [open an issue](https://github.com/kulapard/aiohttp-apigami/issues).
 
 Please ⭐ this repository if it helped you!
 

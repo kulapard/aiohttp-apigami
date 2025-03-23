@@ -64,7 +64,7 @@ jobs:
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-          slug: kulapard/apispec-aiohttp
+          slug: kulapard/aiohttp-apigami
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}

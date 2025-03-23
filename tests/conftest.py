@@ -8,7 +8,7 @@ from aiohttp.pytest_plugin import AiohttpClient
 from aiohttp.test_utils import TestClient
 from marshmallow import EXCLUDE, Schema, fields
 
-from apispec_aiohttp import (
+from aiohttp_apigami import (
     cookies_schema,
     docs,
     headers_schema,

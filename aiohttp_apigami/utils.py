@@ -71,7 +71,7 @@ def resolve_schema_instance(schema: SchemaType | type[TDataclass]) -> m.Schema:
         if mr is None:
             raise RuntimeError(
                 "marshmallow-recipe is required for dataclass support. "
-                "Install it with `pip install apispec-aiohttp[dataclass]`."
+                "Install it with `pip install aiohttp-apigami[dataclass]`."
             )
         return mr.schema(schema)
 

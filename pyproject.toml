@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [project]
-name = "apispec-aiohttp"
+name = "aiohttp-apigami"
 dynamic = ["version"]
 description = "API documentation and validation for aiohttp using apispec"
 readme = "README.md"
@@ -51,8 +51,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/kulapard/apispec-aiohttp"
-Issues = "https://github.com/kulapard/apispec-aiohttp/issues"
+Homepage = "https://github.com/kulapard/aiohttp-apigami"
+Issues = "https://github.com/kulapard/aiohttp-apigami/issues"
 
 [tool.mypy]
 strict = true
@@ -82,4 +82,4 @@ docstring-code-line-length = 60
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "-v --cov=apispec_aiohttp --cov-branch --cov-report=xml --junitxml=junit.xml"
+addopts = "-v --cov=aiohttp_apigami --cov-branch --cov-report=xml --junitxml=junit.xml"

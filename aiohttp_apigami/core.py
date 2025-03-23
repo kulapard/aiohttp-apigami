@@ -174,13 +174,13 @@ def setup_apispec_aiohttp(
     **options: Any,
 ) -> AiohttpApiSpec:
     """
-    apispec-aiohttp extension.
+    aiohttp-apigami extension.
 
     Usage:
 
     .. code-block:: python
 
-        from apispec_aiohttp import (
+        from aiohttp_apigami import (
             docs,
             request_schema,
             setup_apispec_aiohttp,

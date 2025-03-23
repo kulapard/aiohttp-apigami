@@ -7,8 +7,8 @@ from aiohttp import web
 from aiohttp.typedefs import Handler
 from marshmallow import Schema
 
-from apispec_aiohttp import docs, request_schema, response_schema
-from apispec_aiohttp.validation import ValidationSchema
+from aiohttp_apigami import docs, request_schema, response_schema
+from aiohttp_apigami.validation import ValidationSchema
 
 
 @dataclass
@@ -172,7 +172,7 @@ def test_dataclass_all(aiohttp_view_dataclass_all: Handler) -> None:
     assert "data" in response_fields
 
 
-@patch("apispec_aiohttp.utils.mr", None)
+@patch("aiohttp_apigami.utils.mr", None)
 def test_dataclass_without_marshmallow_recipe() -> None:
     """Test decorators with dataclass when marshmallow-recipe is not available."""
     with pytest.raises(RuntimeError, match="marshmallow-recipe is required for dataclass support"):
