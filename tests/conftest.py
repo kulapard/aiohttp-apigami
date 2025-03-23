@@ -17,7 +17,7 @@ from aiohttp_apigami import (
     querystring_schema,
     request_schema,
     response_schema,
-    setup_apispec_aiohttp,
+    setup_aiohttp_apispec,
     validation_middleware,
 )
 
@@ -230,7 +230,7 @@ async def aiohttp_app(  # noqa: C901
     app = web.Application()
     if nested:
         v1 = web.Application()
-        setup_apispec_aiohttp(
+        setup_aiohttp_apispec(
             app=v1,
             title="API documentation",
             version="0.0.1",
@@ -258,7 +258,7 @@ async def aiohttp_app(  # noqa: C901
         v1.middlewares.extend([intercept_error, validation_middleware])
         app.add_subapp("/v1/", v1)
     else:
-        setup_apispec_aiohttp(
+        setup_aiohttp_apispec(
             app=app,
             url="/v1/api/docs/api-docs",
             swagger_path="/v1/api/docs",

@@ -2,7 +2,7 @@
 
 from aiohttp import web
 
-from aiohttp_apigami import OpenApiVersion, setup_apispec_aiohttp, validation_middleware
+from aiohttp_apigami import OpenApiVersion, setup_aiohttp_apispec, validation_middleware
 from aiohttp_apigami.swagger_ui import LayoutOption
 
 from .routes import setup_routes
@@ -15,7 +15,7 @@ def create_app() -> web.Application:
     # In real life, you should use a database
     app["users"] = {}
 
-    setup_apispec_aiohttp(
+    setup_aiohttp_apispec(
         app,
         title="User API",
         version="0.0.1",

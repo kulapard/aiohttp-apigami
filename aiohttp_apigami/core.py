@@ -156,7 +156,7 @@ class AiohttpApiSpec:
         app.router.add_get(spec_path, spec_handler, name=NAME_SWAGGER_SPEC)
 
 
-def setup_apispec_aiohttp(
+def setup_aiohttp_apispec(
     app: web.Application,
     *,
     title: str = "API documentation",

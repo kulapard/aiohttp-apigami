@@ -66,7 +66,7 @@ from aiohttp_apigami import (
     docs,
     request_schema,
     response_schema,
-    setup_apispec_aiohttp,
+    setup_aiohttp_apispec,
 )
 from aiohttp import web
 from marshmallow import Schema, fields
@@ -99,7 +99,7 @@ app = web.Application()
 app.router.add_post("/v1/test", index)
 
 # Initialize documentation with all parameters
-setup_apispec_aiohttp(
+setup_aiohttp_apispec(
     app=app,
     title="My Documentation",
     version="v1",
