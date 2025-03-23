@@ -72,7 +72,7 @@ class OpenAPIv2Processor(BaseOpenAPIProcessor):
         """Helper method to add example to schema for v2."""
         if add_to_refs:
             self._spec_manager.schemas[schema_name]["example"] = example
-        else:
+        elif parameters:
             # Get the reference path from $ref field
             ref_path = parameters[0]["schema"].pop("$ref")
             # Ensure there's no duplication of #/definitions/
@@ -156,7 +156,7 @@ class OpenAPIv3Processor(BaseOpenAPIProcessor):
         """Helper method to add example to schema for v3."""
         if add_to_refs and schema_name is not None:
             self._spec_manager.schemas[schema_name]["example"] = example
-        else:
+        elif parameters:
             # Get the reference path from $ref field
             ref_path = parameters[0]["schema"].pop("$ref")
             # Ensure there's no duplication of #/definitions/
