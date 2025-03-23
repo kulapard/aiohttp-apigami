@@ -17,11 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 def resolver(schema: SchemaType) -> str:
+    """
+    Default schema name resolver.
+    Strips 'Schema' from the end of the class name.
+    Adds 'Partial-' prefix if schema is a partial schema.
+    """
     schema_instance = common.resolve_schema_instance(schema)
+    resolved = common.resolve_schema_cls(schema)
+    schema_cls = resolved[0] if isinstance(resolved, list) else resolved
+
+    # add prefix to schema name if it is a partial schema
     prefix = "Partial-" if schema_instance.partial else ""
-    schema_cls = common.resolve_schema_cls(schema)
-    # add prefix to schema name
-    name = prefix + schema_cls.__name__ if hasattr(schema_cls, "__name__") else "Schema"
+    name = prefix + schema_cls.__name__
     if name.endswith("Schema"):
         # remove "Schema" suffix
         return name[:-6] or name

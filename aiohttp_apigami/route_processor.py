@@ -37,20 +37,21 @@ class RouteProcessor:
 
     def _iter_routes(self, app: web.Application) -> Iterator[RouteData]:
         for route in app.router.routes():
+            path = get_path(route)
+            if path is None:
+                # Skip routes with no path
+                continue
+
             # Class based views have multiple methods
             if is_class_based_view(route.handler):
                 for method_name, method_func in self._get_implemented_methods(route.handler):
-                    path = get_path(route)
-                    if path is not None:
-                        yield RouteData(method=method_name, path=path, handler=method_func)
+                    yield RouteData(method=method_name, path=path, handler=method_func)
 
             # Function based views have a single method
             else:
-                path = get_path(route)
-                if path is not None:
-                    method = route.method.lower()
-                    handler = route.handler
-                    yield RouteData(method=method, path=path, handler=handler)
+                method = route.method.lower()
+                handler = route.handler
+                yield RouteData(method=method, path=path, handler=handler)
 
     def register_routes(self, app: web.Application) -> None:
         """Register all routes from the application."""
