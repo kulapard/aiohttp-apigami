@@ -15,7 +15,18 @@ _BODY_LOCATIONS = {"body", "json"}
 
 class ApigamiPlugin(MarshmallowPlugin):
     def _path_parameters(self, path_key: str) -> dict[str, Any]:
-        """Create path parameters based on OpenAPI/Swagger spec."""
+        """
+        Create path parameters based on OpenAPI/Swagger spec.
+
+        Generates parameter definitions for URL path parameters in the format
+        required by either OpenAPI v2 or v3, depending on the configured version.
+
+        Args:
+            path_key: The name of the path parameter from the URL pattern
+
+        Returns:
+            A dictionary containing the path parameter definition
+        """
         assert self.openapi_version is not None, "init_spec has not yet been called"
 
         # OpenAPI v2
@@ -26,7 +37,19 @@ class ApigamiPlugin(MarshmallowPlugin):
         return {"in": "path", "name": path_key, "required": True, "schema": {"type": "string"}}
 
     def _response_parameters(self, schema: m.Schema) -> dict[str, Any]:
-        """Create response parameters based on OpenAPI/Swagger spec."""
+        """
+        Create response parameters based on OpenAPI/Swagger spec.
+
+        Generates response parameter definitions in the format required by either
+        OpenAPI v2 or v3, depending on the configured version. In v2, the schema
+        is directly included, while in v3 it's nested under content/application/json.
+
+        Args:
+            schema: A Marshmallow schema instance that defines the response structure
+
+        Returns:
+            A dictionary containing the response parameter definition
+        """
         assert self.openapi_version is not None, "init_spec has not yet been called"
 
         # OpenAPI v2
@@ -48,7 +71,18 @@ class ApigamiPlugin(MarshmallowPlugin):
         example: dict[str, Any] | None,
         parameters: list[dict[str, Any]] | None = None,
     ) -> None:
-        """Add examples to schema or endpoint for OpenAPI v3."""
+        """
+        Add examples to schema or endpoint for OpenAPI spec.
+
+        Adds provided example data to either a schema reference or parameter list.
+        Behavior varies depending on OpenAPI version (v2 or v3) and whether
+        the example should be added to a schema reference or inline.
+
+        Args:
+            schema_instance: The Marshmallow schema instance
+            example: The example data to add (if None, no example is added)
+            parameters: List of parameter definitions to potentially add the example to
+        """
         assert self.spec is not None, "init_spec has not yet been called"
         assert self.openapi_version is not None, "init_spec has not yet been called"
         assert self.converter is not None, "init_spec has not yet been called"
@@ -70,7 +104,19 @@ class ApigamiPlugin(MarshmallowPlugin):
     def _add_example_to_schema(
         self, schema_name: str, parameters: list[dict[str, Any]] | None, example: dict[str, Any], add_to_refs: bool
     ) -> None:
-        """Helper method to add example to schema for v3."""
+        """
+        Helper method to add example to schema.
+
+        Adds example data to either the schema definition (when add_to_refs is True)
+        or to the parameters list (when add_to_refs is False).
+
+        Args:
+            schema_name: The name of the schema to add the example to
+            parameters: List of parameter definitions where the example may be added
+            example: The example data to add
+            add_to_refs: If True, add example directly to schema definition;
+                         otherwise, add to parameters
+        """
         assert self.spec is not None, "init_spec has not yet been called"
 
         if add_to_refs and schema_name is not None:
@@ -85,7 +131,17 @@ class ApigamiPlugin(MarshmallowPlugin):
             parameters[0]["schema"]["example"] = example
 
     def _process_body(self, schema: dict[str, Any], method_operation: dict[str, Any]) -> None:
-        """Process request body for OpenAPI spec."""
+        """
+        Process request body for OpenAPI spec.
+
+        Extracts and formats request body schemas for OpenAPI documentation.
+        For v2, adds body schemas as parameters.
+        For v3, processes body schemas into requestBody format.
+
+        Args:
+            schema: The schema definition including location and schema instance
+            method_operation: The operation dictionary to update with body parameters
+        """
         assert self.openapi_version is not None, "init_spec has not yet been called"
         assert self.converter is not None, "init_spec has not yet been called"
 
@@ -117,7 +173,19 @@ class ApigamiPlugin(MarshmallowPlugin):
             }
 
     def _get_method_operation(self, handler: HandlerType) -> dict[str, Any]:
-        """Process request schemas for OpenAPI spec. Returns operation object."""
+        """
+        Process request schemas for OpenAPI spec. Returns operation object.
+
+        Builds a complete operation object with parameters derived from handler
+        schemas and explicit parameters. Handles both body and non-body parameters
+        according to OpenAPI spec version rules.
+
+        Args:
+            handler: The request handler function with API spec metadata
+
+        Returns:
+            Dictionary with parameters and other operation components
+        """
         assert self.converter is not None, "init_spec has not yet been called"
         assert self.openapi_version is not None, "init_spec has not yet been called"
 
@@ -147,7 +215,17 @@ class ApigamiPlugin(MarshmallowPlugin):
         return operation
 
     def _process_responses(self, handler: HandlerType, method_operation: dict[str, Any]) -> None:
-        """Process response schemas for OpenAPI spec."""
+        """
+        Process response schemas for OpenAPI spec.
+
+        Extracts response schemas from handler metadata and adds them to the
+        operation object in the format required by the configured OpenAPI version.
+        Preserves additional response metadata like descriptions and headers.
+
+        Args:
+            handler: The request handler function with API spec metadata
+            method_operation: The operation object to update with response information
+        """
         handler_spec = getattr(handler, API_SPEC_ATTR, {})
         if not handler_spec:
             return None
@@ -173,7 +251,16 @@ class ApigamiPlugin(MarshmallowPlugin):
 
     @staticmethod
     def _process_extra_options(handler: HandlerType, method_operation: dict[str, Any]) -> None:
-        """Process extra options for OpenAPI spec."""
+        """
+        Process extra options for OpenAPI spec.
+
+        Extracts and adds any additional metadata from handler spec that isn't
+        specifically related to schemas, responses, or parameters.
+
+        Args:
+            handler: The request handler function with API spec metadata
+            method_operation: The operation object to update with additional options
+        """
         handler_spec = getattr(handler, API_SPEC_ATTR, {})
         if not handler_spec:
             return None
@@ -183,7 +270,16 @@ class ApigamiPlugin(MarshmallowPlugin):
                 method_operation[key] = value
 
     def _process_path_parameters(self, path: str, method_operation: dict[str, Any]) -> None:
-        """Process path parameters for OpenAPI spec."""
+        """
+        Process path parameters for OpenAPI spec.
+
+        Identifies URL path parameters (like /users/{id}) and adds corresponding
+        parameter definitions to the operation if they don't already exist.
+
+        Args:
+            path: The URL path pattern that may contain parameters in {brackets}
+            method_operation: The operation object to update with path parameters
+        """
         assert self.openapi_version is not None, "init_spec has not yet been called"
 
         method_parameters = method_operation["parameters"]
@@ -203,7 +299,24 @@ class ApigamiPlugin(MarshmallowPlugin):
         route: RouteData | None = None,
         **kwargs: Any,
     ) -> str | None:
-        """Path helper that allows using an aiohttp AbstractRoute in path definition."""
+        """
+        Path helper that processes route data for OpenAPI documentation.
+
+        This is the main entry point for apispec that converts an aiohttp route
+        into an OpenAPI path definition. It extracts all metadata from the route handler,
+        processes parameters, responses, and other documentation details, and
+        formats them according to the OpenAPI specification version.
+
+        Args:
+            path: The URL path pattern (not used, route.path is used instead)
+            operations: Dictionary to update with operation objects
+            parameters: List of parameters (not used in this implementation)
+            route: The RouteData object containing method, path, and handler information
+            kwargs: Additional arguments (not used)
+
+        Returns:
+            The processed path or None if processing failed
+        """
         assert self.openapi_version is not None, "init_spec has not yet been called"
         assert operations is not None
         assert parameters is not None
