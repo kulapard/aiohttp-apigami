@@ -183,35 +183,34 @@ class ApigamiPlugin(MarshmallowPlugin):
         if route.method not in valid_methods:
             return route.path
 
-        # Request parameters
-        request_parameters = self._process_parameters(route.handler)
+        # Request
+        method_parameters = self._process_parameters(route.handler)
 
-        # Response parameters
-        responses = self._process_responses(route.handler)
+        # Update path keys if they are not already present in the handler_apispec (from match_info schema)
+        existing_path_keys = {p["name"] for p in method_parameters if p["in"] == "path"}
+        new_path_keys = (path_key for path_key in get_path_keys(route.path) if path_key not in existing_path_keys)
+        new_path_params = [self._path_parameters(path_key) for path_key in new_path_keys]
+        method_parameters.extend(new_path_params)
 
         # Body parameters
         body_parameters = self._process_body(route.handler)
 
-        # Other options
+        # Response
+        method_responses = self._process_responses(route.handler)
+
+        # Extra options
         extra_options = self._process_extra_options(route.handler)
 
-        # Combine all parameters into one list:
+        # Combine all method parameters and responses
         # [{method: {responses: {}, parameters: [], ...}}]
         operations.update(
             {
                 route.method.lower(): {
-                    "responses": responses,
-                    "parameters": request_parameters,
+                    "responses": method_responses,
+                    "parameters": method_parameters,
                     **body_parameters,
                     **extra_options,
                 }
             }
         )
-
-        # Update path keys if they are not already present in the handler_apispec (from match_info schema)
-        existing_path_keys = {p["name"] for p in parameters if p["in"] == "path"}
-        new_path_keys = (path_key for path_key in get_path_keys(route.path) if path_key not in existing_path_keys)
-        new_path_params = [self._path_parameters(path_key) for path_key in new_path_keys]
-        parameters.extend(new_path_params)
-
         return route.path
