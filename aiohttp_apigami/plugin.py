@@ -297,6 +297,8 @@ class ApigamiPlugin(MarshmallowPlugin):
         parameters: list[dict[Any, Any]] | None = None,
         *,
         route: RouteData | None = None,
+        method: str | None = None,
+        handler: HandlerType | None = None,
         **kwargs: Any,
     ) -> str | None:
         """
@@ -308,11 +310,13 @@ class ApigamiPlugin(MarshmallowPlugin):
         formats them according to the OpenAPI specification version.
 
         Args:
-            path: The URL path pattern (not used, route.path is used instead)
-            operations: Dictionary to update with operation objects
-            parameters: List of parameters (not used in this implementation)
-            route: The RouteData object containing method, path, and handler information
-            kwargs: Additional arguments (not used)
+            path: The URL path pattern that may contain parameters in {brackets}
+            operations: Dictionary to update with operation definitions
+            parameters: List of global parameters applicable to all operations
+            route: RouteData object containing path, method, and handler
+            method: HTTP method (get, post, put, etc.) for the operation
+            handler: The request handler function with API spec metadata
+            kwargs: Additional arguments passed by apispec
 
         Returns:
             The processed path or None if processing failed
@@ -320,25 +324,27 @@ class ApigamiPlugin(MarshmallowPlugin):
         assert self.openapi_version is not None, "init_spec has not yet been called"
         assert operations is not None
         assert parameters is not None
-        assert route is not None
+        assert path is not None
+        assert method is not None
+        assert handler is not None
 
         valid_methods = VALID_METHODS[self.openapi_version.major]
-        if route.method not in valid_methods:
-            return route.path
+        if method not in valid_methods:
+            raise RuntimeError(f"Method {method!r} not supported by OpenAPI spec version {self.openapi_version.major}")
 
         # Request
-        method_operation = self._get_method_operation(route.handler)
+        method_operation = self._get_method_operation(handler)
 
         # Path parameters
-        self._process_path_parameters(path=route.path, method_operation=method_operation)
+        self._process_path_parameters(path=path, method_operation=method_operation)
 
         # Response
-        self._process_responses(route.handler, method_operation)
+        self._process_responses(handler, method_operation)
 
         # Extra options
-        self._process_extra_options(route.handler, method_operation)
+        self._process_extra_options(handler, method_operation)
 
         # Combine all method parameters and responses
         # [{method: {responses: {}, parameters: [], ...}}]
-        operations[route.method] = method_operation
-        return route.path
+        operations[method] = method_operation
+        return path

@@ -7,7 +7,6 @@ from apispec.core import VALID_METHODS
 from marshmallow import Schema, fields
 
 from aiohttp_apigami.constants import API_SPEC_ATTR
-from aiohttp_apigami.data import RouteData
 from aiohttp_apigami.plugin import ApigamiPlugin
 
 
@@ -407,13 +406,12 @@ class TestApigamiPlugin:
             },
         )
 
-        # Create route data
-        route = RouteData(method="get", path="/test/{test_id}", handler=handler)
-
         # Call path helper
         operations: dict[str, Any] = {}
         parameters: list[dict[str, Any]] = []
-        path = plugin.path_helper(path=None, operations=operations, parameters=parameters, route=route)
+        path = plugin.path_helper(
+            path="/test/{test_id}", method="get", handler=handler, operations=operations, parameters=parameters
+        )
 
         # Check results
         assert path == "/test/{test_id}"

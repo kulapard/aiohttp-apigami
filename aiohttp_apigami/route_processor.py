@@ -66,4 +66,4 @@ class RouteProcessor:
 
     def register_route(self, route: RouteData) -> None:
         """Register a single route. It will be processed by AiohttpPlugin."""
-        self._spec.path(route=route)
+        self._spec.path(path=route.path, method=route.method, handler=route.handler)
