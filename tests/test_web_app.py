@@ -122,12 +122,13 @@ async def test_response_data_class_post(aiohttp_app: Any) -> None:
 
 async def test_path_variable_described_correctly(aiohttp_app: Any) -> None:
     if aiohttp_app.app._subapps:
-        swag = aiohttp_app.app._subapps[0]["swagger_dict"]["paths"]["/v1/variable/{var}"]
+        swag = aiohttp_app.app._subapps[0]["swagger_dict"]
     else:
-        swag = aiohttp_app.app["swagger_dict"]["paths"]["/v1/variable/{var}"]
-    assert len(swag["get"]["parameters"]) == 1, "There should only be one"
-    assert swag["get"]["parameters"][0]["name"] == "var"
-    assert swag["get"]["parameters"][0]["schema"]["format"] == "uuid"
+        swag = aiohttp_app.app["swagger_dict"]
+    path_params = swag["paths"]["/v1/variable/{var}"]["get"]["parameters"]
+    assert len(path_params) == 1, "There should only be one"
+    assert path_params[0]["name"] == "var"
+    assert path_params[0]["schema"]["format"] == "uuid"
 
 
 async def test_response_data_class_without_spec(aiohttp_app: Any) -> None:
