@@ -96,8 +96,9 @@ class ApigamiPlugin(MarshmallowPlugin):
         if self.openapi_version.major < 3:
             if schema_name in self.spec.components.schemas:
                 self._add_example_to_schema(schema_name, parameters, example, add_to_refs)
+
+        # v3: Always add the example regardless of schema being in schemas
         else:
-            # v3: Always add the example regardless of schema being in schemas
             self._add_example_to_schema(schema_name, parameters, example, add_to_refs)
 
     def _add_example_to_schema(
