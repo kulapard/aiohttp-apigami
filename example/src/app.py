@@ -21,7 +21,7 @@ def create_app() -> web.Application:
         version="0.0.1",
         swagger_path="/api/docs",
         swagger_layout=LayoutOption.Standalone,
-        openapi_version=OpenApiVersion.V20,
+        openapi_version=OpenApiVersion.V303,
     )
     app.middlewares.append(validation_middleware)
 

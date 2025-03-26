@@ -4,12 +4,12 @@ from typing import Any
 
 from aiohttp import web
 from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin, common
+from apispec.ext.marshmallow import common
 from webargs.aiohttpparser import parser
 
 from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, SWAGGER_DICT
+from .plugin import ApigamiPlugin
 from .route_processor import RouteProcessor
-from .spec import SpecManager
 from .swagger_ui import NAME_SWAGGER_SPEC, LayoutOption, SwaggerUIManager
 from .typedefs import SchemaNameResolver, SchemaType
 
@@ -17,11 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 def resolver(schema: SchemaType) -> str:
+    """
+    Default schema name resolver.
+    Strips 'Schema' from the end of the class name.
+    Adds 'Partial-' prefix if schema is a partial schema.
+    """
     schema_instance = common.resolve_schema_instance(schema)
+    resolved = common.resolve_schema_cls(schema)
+    schema_cls = resolved[0] if isinstance(resolved, list) else resolved
+
+    # add prefix to schema name if it is a partial schema
     prefix = "Partial-" if schema_instance.partial else ""
-    schema_cls = common.resolve_schema_cls(schema)
-    # add prefix to schema name
-    name = prefix + schema_cls.__name__ if hasattr(schema_cls, "__name__") else "Schema"
+    name = prefix + schema_cls.__name__
     if name.endswith("Schema"):
         # remove "Schema" suffix
         return name[:-6] or name
@@ -41,7 +48,7 @@ class AiohttpApiSpec:
         "_registered",
         "_request_data_name",
         "_route_processor",
-        "_spec_manager",
+        "_spec",
         "_swagger_ui",
         "error_callback",
         "prefix",
@@ -71,10 +78,12 @@ class AiohttpApiSpec:
             raise ValueError(f"Invalid `openapi_version`: {openapi_version!r}") from None
 
         # Initialize components
-        self._spec_manager = SpecManager(
-            openapi_version=openapi_version.value, schema_name_resolver=schema_name_resolver, **options
+        self._spec = APISpec(
+            plugins=(ApigamiPlugin(schema_name_resolver=schema_name_resolver),),
+            openapi_version=openapi_version,
+            **options,
         )
-        self._route_processor = RouteProcessor(self._spec_manager, prefix=prefix)
+        self._route_processor = RouteProcessor(self._spec, prefix=prefix)
         self._swagger_ui = SwaggerUIManager(url=url, static_path=static_path, layout=swagger_layout)
 
         # Store configuration
@@ -91,18 +100,13 @@ class AiohttpApiSpec:
             self.register(app, in_place)
 
     @property
-    def plugin(self) -> MarshmallowPlugin:
-        """Get access to MarshmallowPlugin. Deprecated in 1.x release."""
-        return self._spec_manager.plugin
-
-    @property
     def spec(self) -> APISpec:
         """Get access to APISpec instance. Deprecated in 1.x release."""
-        return self._spec_manager.spec
+        return self._spec
 
     def swagger_dict(self) -> dict[str, Any]:
         """Returns swagger spec representation in JSON format"""
-        return self._spec_manager.swagger_dict()
+        return self._spec.to_dict()
 
     def register(self, app: web.Application, in_place: bool = False) -> None:
         """Creates spec based on registered app routes and registers needed view"""
