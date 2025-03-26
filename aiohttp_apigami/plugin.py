@@ -154,23 +154,23 @@ class ApigamiPlugin(MarshmallowPlugin):
 
         schema_instance = schema["schema"]
 
-        # v2: body/json is processed as part of parameters
+        # v2: body/json is a part of parameters
         if self.openapi_version.major < 3:
             body_parameters = self.converter.schema2parameters(
                 schema=schema_instance, location=location, **schema["options"]
             )
-            self._add_example(
-                schema_instance=schema_instance, parameters=body_parameters, example=schema.get("example")
-            )
             method_operation["parameters"].extend(body_parameters)
 
-        # v3: body/json is processed as requestBody
+        # v3: body/json is requestBody object
         else:
-            self._add_example(schema_instance=schema_instance, example=schema.get("example"))
+            body_parameters = None
             method_operation["requestBody"] = {
                 "content": {"application/json": {"schema": schema_instance}},
                 **schema["options"],
             }
+
+        # Add example for all OpenAPI versions
+        self._add_example(schema_instance=schema_instance, parameters=body_parameters, example=schema.get("example"))
 
     def _get_method_operation(self, handler: HandlerType) -> dict[str, Any]:
         """
