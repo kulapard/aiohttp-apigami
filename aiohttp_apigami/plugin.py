@@ -13,7 +13,7 @@ from aiohttp_apigami.utils import get_path_keys
 _BODY_LOCATIONS = {"body", "json"}
 
 
-class AiohttpPlugin(MarshmallowPlugin):
+class ApigamiPlugin(MarshmallowPlugin):
     def _path_parameters(self, path_key: str) -> dict[str, Any]:
         """Create path parameters based on OpenAPI/Swagger spec."""
         assert self.openapi_version is not None, "init_spec has not yet been called"

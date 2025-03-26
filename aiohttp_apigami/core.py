@@ -8,7 +8,7 @@ from apispec.ext.marshmallow import common
 from webargs.aiohttpparser import parser
 
 from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, SWAGGER_DICT
-from .plugin import AiohttpPlugin
+from .plugin import ApigamiPlugin
 from .route_processor import RouteProcessor
 from .swagger_ui import NAME_SWAGGER_SPEC, LayoutOption, SwaggerUIManager
 from .typedefs import SchemaNameResolver, SchemaType
@@ -79,7 +79,7 @@ class AiohttpApiSpec:
 
         # Initialize components
         self._spec = APISpec(
-            plugins=(AiohttpPlugin(schema_name_resolver=schema_name_resolver),),
+            plugins=(ApigamiPlugin(schema_name_resolver=schema_name_resolver),),
             openapi_version=openapi_version,
             **options,
         )
