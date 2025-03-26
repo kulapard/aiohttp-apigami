@@ -6,7 +6,6 @@ from apispec.core import VALID_METHODS
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 from aiohttp_apigami.constants import API_SPEC_ATTR
-from aiohttp_apigami.data import RouteData
 from aiohttp_apigami.typedefs import HandlerType
 from aiohttp_apigami.utils import get_path_keys
 
@@ -296,11 +295,10 @@ class ApigamiPlugin(MarshmallowPlugin):
         operations: dict[Any, Any] | None = None,
         parameters: list[dict[Any, Any]] | None = None,
         *,
-        route: RouteData | None = None,
         method: str | None = None,
         handler: HandlerType | None = None,
         **kwargs: Any,
-    ) -> str | None:
+    ) -> str:
         """
         Path helper that processes route data for OpenAPI documentation.
 
@@ -313,38 +311,44 @@ class ApigamiPlugin(MarshmallowPlugin):
             path: The URL path pattern that may contain parameters in {brackets}
             operations: Dictionary to update with operation definitions
             parameters: List of global parameters applicable to all operations
-            route: RouteData object containing path, method, and handler
             method: HTTP method (get, post, put, etc.) for the operation
             handler: The request handler function with API spec metadata
-            kwargs: Additional arguments passed by apispec
+            **kwargs: Additional arguments passed by apispec
 
         Returns:
-            The processed path or None if processing failed
+            The processed path
+
+        Raises:
+            RuntimeError: If the HTTP method is not supported by the OpenAPI specification version
+            AssertionError: If any required parameters are missing
         """
         assert self.openapi_version is not None, "init_spec has not yet been called"
         assert operations is not None
         assert parameters is not None
-        assert path is not None
-        assert method is not None
-        assert handler is not None
 
+        # Validate that we have all required parameters
+        assert path is not None, "Missing 'path' parameter"
+        assert method is not None, "Missing 'method' parameter"
+        assert handler is not None, "Missing 'handler' parameter"
+
+        # Check if method is valid for the current OpenAPI version
         valid_methods = VALID_METHODS[self.openapi_version.major]
-        if method not in valid_methods:
-            raise RuntimeError(f"Method {method!r} not supported by OpenAPI spec version {self.openapi_version.major}")
+        if method.lower() not in valid_methods:
+            raise RuntimeError(f"Method {method!r} not supported by OpenAPI spec version {self.openapi_version}")
 
-        # Request
+        # Build the method operation object
         method_operation = self._get_method_operation(handler)
 
-        # Path parameters
+        # Process path parameters
         self._process_path_parameters(path=path, method_operation=method_operation)
 
-        # Response
+        # Process response schemas
         self._process_responses(handler, method_operation)
 
-        # Extra options
+        # Process additional options (tags, summary, etc.)
         self._process_extra_options(handler, method_operation)
 
-        # Combine all method parameters and responses
-        # [{method: {responses: {}, parameters: [], ...}}]
-        operations[method] = method_operation
+        # Add the operation to the operations dictionary
+        operations[method.lower()] = method_operation
+
         return path
