@@ -43,7 +43,10 @@ class ApigamiPlugin(MarshmallowPlugin):
         }
 
     def _add_example(
-        self, schema_instance: m.Schema, parameters: list[dict[str, Any]], example: dict[str, Any] | None
+        self,
+        schema_instance: m.Schema,
+        example: dict[str, Any] | None,
+        parameters: list[dict[str, Any]] | None = None,
     ) -> None:
         """Add examples to schema or endpoint for OpenAPI v3."""
         assert self.spec is not None, "init_spec has not yet been called"
@@ -65,7 +68,7 @@ class ApigamiPlugin(MarshmallowPlugin):
             self._add_example_to_schema(schema_name, parameters, example, add_to_refs)
 
     def _add_example_to_schema(
-        self, schema_name: str, parameters: list[dict[str, Any]], example: dict[str, Any], add_to_refs: bool
+        self, schema_name: str, parameters: list[dict[str, Any]] | None, example: dict[str, Any], add_to_refs: bool
     ) -> None:
         """Helper method to add example to schema for v3."""
         assert self.spec is not None, "init_spec has not yet been called"
@@ -81,62 +84,79 @@ class ApigamiPlugin(MarshmallowPlugin):
             parameters[0]["schema"]["allOf"] = [{"$ref": ref_path}]
             parameters[0]["schema"]["example"] = example
 
-    def _process_body(self, handler: HandlerType) -> dict[str, Any]:
-        """Process request body for OpenAPI v3 spec."""
+    def _process_body(self, schema: dict[str, Any], method_operation: dict[str, Any]) -> None:
+        """Process request body for OpenAPI spec."""
         assert self.openapi_version is not None, "init_spec has not yet been called"
+        assert self.converter is not None, "init_spec has not yet been called"
 
+        method_operation["parameters"] = method_operation.get("parameters", [])
+
+        location = schema["location"]
+        if location not in _BODY_LOCATIONS:
+            # Process only json location
+            return
+
+        schema_instance = schema["schema"]
+
+        # v2: body/json is processed as part of parameters
         if self.openapi_version.major < 3:
-            # v2: body/json is processed as part of parameters
-            return {}
+            body_parameters = self.converter.schema2parameters(
+                schema=schema_instance, location=location, **schema["options"]
+            )
+            self._add_example(
+                schema_instance=schema_instance, parameters=body_parameters, example=schema.get("example")
+            )
+            method_operation["parameters"].extend(body_parameters)
 
-        handler_spec = getattr(handler, API_SPEC_ATTR, {})
-        if not handler_spec:
-            return {}
+        # v3: body/json is processed as requestBody
+        else:
+            self._add_example(schema_instance=schema_instance, example=schema.get("example"))
+            method_operation["requestBody"] = {
+                "content": {"application/json": {"schema": schema_instance}},
+                **schema["options"],
+            }
 
-        # Find the first body schema
-        for schema in handler_spec["schemas"]:
-            if schema["location"] in _BODY_LOCATIONS:
-                return {
-                    "requestBody": {"content": {"application/json": {"schema": schema["schema"]}}, **schema["options"]}
-                }
-
-        return {}
-
-    def _process_parameters(self, handler: HandlerType) -> list[dict[str, Any]]:
-        """Process request schemas for OpenAPI spec."""
+    def _get_method_operation(self, handler: HandlerType) -> dict[str, Any]:
+        """Process request schemas for OpenAPI spec. Returns operation object."""
         assert self.converter is not None, "init_spec has not yet been called"
         assert self.openapi_version is not None, "init_spec has not yet been called"
 
         handler_spec = getattr(handler, API_SPEC_ATTR, {})
         if not handler_spec:
-            return []
+            return {}
 
-        parameters: list[dict[Any, Any]] = copy.deepcopy(handler_spec["parameters"])
+        # Set existing parameters
+        operation: dict[str, Any] = {"parameters": copy.deepcopy(handler_spec["parameters"])}
 
+        # Add parameters from schemas
         for schema in handler_spec["schemas"]:
             location = schema["location"]
-            if self.openapi_version.major >= 3 and location in _BODY_LOCATIONS:
-                # Skip body schema as it is processed separately
-                continue
+            if location in _BODY_LOCATIONS:
+                # Single body parameter is located in different place for v2 and v3
+                # process it separately
+                self._process_body(schema=schema, method_operation=operation)
+            else:
+                example = schema.get("example")
+                schema_instance = schema["schema"]
+                schema_parameters = self.converter.schema2parameters(
+                    schema=schema_instance, location=location, **schema["options"]
+                )
+                self._add_example(schema_instance=schema_instance, parameters=schema_parameters, example=example)
+                operation["parameters"].extend(schema_parameters)
 
-            example = schema["example"]
-            schema_instance = schema["schema"]
-            schema_parameters = self.converter.schema2parameters(
-                schema=schema_instance, location=location, **schema["options"]
-            )
-            self._add_example(schema_instance=schema_instance, parameters=schema_parameters, example=example)
-            parameters.extend(schema_parameters)
-        return parameters
+        return operation
 
-    def _process_responses(self, handler: HandlerType) -> dict[str, Any]:
+    def _process_responses(self, handler: HandlerType, method_operation: dict[str, Any]) -> None:
         """Process response schemas for OpenAPI spec."""
         handler_spec = getattr(handler, API_SPEC_ATTR, {})
         if not handler_spec:
-            return {}
+            return None
 
-        responses_data = handler_spec.get("responses")
+        method_operation["responses"] = method_operation.get("responses", {})
+
+        responses_data = handler_spec.get("responses", {})
         if not responses_data:
-            return {}
+            return None
 
         responses = {}
         for code, actual_params in responses_data.items():
@@ -148,21 +168,31 @@ class ApigamiPlugin(MarshmallowPlugin):
                 responses[code] = response_params
             else:
                 responses[code] = actual_params
-        return responses
+
+        method_operation["responses"].update(responses)
 
     @staticmethod
-    def _process_extra_options(handler: HandlerType) -> dict[str, Any]:
+    def _process_extra_options(handler: HandlerType, method_operation: dict[str, Any]) -> None:
         """Process extra options for OpenAPI spec."""
         handler_spec = getattr(handler, API_SPEC_ATTR, {})
         if not handler_spec:
-            return {}
+            return None
 
-        other_options = {}
         for key, value in handler_spec.items():
             if key not in ("schemas", "responses", "parameters"):
-                other_options[key] = value
+                method_operation[key] = value
 
-        return other_options
+    def _process_path_parameters(self, path: str, method_operation: dict[str, Any]) -> None:
+        """Process path parameters for OpenAPI spec."""
+        assert self.openapi_version is not None, "init_spec has not yet been called"
+
+        method_parameters = method_operation["parameters"]
+
+        path_keys = get_path_keys(path)
+        existing_path_keys = {p["name"] for p in method_parameters if p["in"] == "path"}
+        new_path_keys = (k for k in path_keys if k not in existing_path_keys)
+        new_path_params = [self._path_parameters(path_key) for path_key in new_path_keys]
+        method_parameters.extend(new_path_params)
 
     def path_helper(
         self,
@@ -184,33 +214,18 @@ class ApigamiPlugin(MarshmallowPlugin):
             return route.path
 
         # Request
-        method_parameters = self._process_parameters(route.handler)
+        method_operation = self._get_method_operation(route.handler)
 
-        # Update path keys if they are not already present in the handler_apispec (from match_info schema)
-        existing_path_keys = {p["name"] for p in method_parameters if p["in"] == "path"}
-        new_path_keys = (path_key for path_key in get_path_keys(route.path) if path_key not in existing_path_keys)
-        new_path_params = [self._path_parameters(path_key) for path_key in new_path_keys]
-        method_parameters.extend(new_path_params)
-
-        # Body parameters
-        body_parameters = self._process_body(route.handler)
+        # Path parameters
+        self._process_path_parameters(path=route.path, method_operation=method_operation)
 
         # Response
-        method_responses = self._process_responses(route.handler)
+        self._process_responses(route.handler, method_operation)
 
         # Extra options
-        extra_options = self._process_extra_options(route.handler)
+        self._process_extra_options(route.handler, method_operation)
 
         # Combine all method parameters and responses
         # [{method: {responses: {}, parameters: [], ...}}]
-        operations.update(
-            {
-                route.method.lower(): {
-                    "responses": method_responses,
-                    "parameters": method_parameters,
-                    **body_parameters,
-                    **extra_options,
-                }
-            }
-        )
+        operations[route.method] = method_operation
         return route.path

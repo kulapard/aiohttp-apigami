@@ -159,23 +159,18 @@ class TestApigamiPlugin:
         async def handler() -> web.StreamResponse:
             return web.Response()
 
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "schemas": [
-                    {
-                        "schema": SampleSchema(),
-                        "location": "json",
-                        "options": {},
-                    }
-                ]
-            },
-        )
+        schema_dict = {
+            "schema": SampleSchema(),
+            "location": "json",
+            "options": {},
+        }
 
-        # For v2, body should be empty (body is part of parameters)
-        body = plugin._process_body(handler)
-        assert body == {}
+        # For v2, body should be included in parameters
+        method_operation: dict[str, Any] = {}
+        plugin._process_body(schema_dict, method_operation)
+        assert method_operation["parameters"] == [
+            {"in": "body", "name": "body", "required": False, "schema": {"$ref": "#/definitions/Sample"}}
+        ]
 
     def test_process_body_v3(self) -> None:
         """Test body processing for OpenAPI v3."""
@@ -196,28 +191,21 @@ class TestApigamiPlugin:
             return web.Response()
 
         schema = SampleSchema()
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "schemas": [
-                    {
-                        "schema": schema,
-                        "location": "json",
-                        "options": {"required": True},
-                    }
-                ]
-            },
-        )
+        schema_dict = {
+            "schema": schema,
+            "location": "json",
+            "options": {"required": True},
+        }
 
         # For v3, body should be formatted as a requestBody
-        body = plugin._process_body(handler)
-        assert "requestBody" in body
-        assert "content" in body["requestBody"]
-        assert "application/json" in body["requestBody"]["content"]
-        assert "schema" in body["requestBody"]["content"]["application/json"]
-        assert body["requestBody"]["content"]["application/json"]["schema"] == schema
-        assert body["requestBody"]["required"] is True
+        method_operation: dict[str, Any] = {}
+        plugin._process_body(schema_dict, method_operation)
+        assert "requestBody" in method_operation
+        assert method_operation["parameters"] == []
+        assert method_operation["requestBody"] == {
+            "content": {"application/json": {"schema": schema}},
+            "required": True,
+        }
 
     def test_process_body_v3_no_body(self) -> None:
         """Test body processing for OpenAPI v3 without body schema."""
@@ -236,23 +224,16 @@ class TestApigamiPlugin:
         async def handler() -> web.StreamResponse:
             return web.Response()
 
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "schemas": [
-                    {
-                        "schema": SampleSchema(),
-                        "location": "querystring",
-                        "options": {},
-                    }
-                ]
-            },
-        )
+        schema_dict = {
+            "schema": SampleSchema(),
+            "location": "querystring",
+            "options": {},
+        }
 
         # No body schema, should return empty dict
-        body = plugin._process_body(handler)
-        assert body == {}
+        method_operation: dict[str, Any] = {}
+        plugin._process_body(schema_dict, method_operation)
+        assert "requestBody" not in method_operation
 
     def test_process_parameters(self) -> None:
         """Test parameters processing."""
@@ -289,9 +270,10 @@ class TestApigamiPlugin:
         )
 
         # Process parameters
-        params = plugin._process_parameters(handler)
+        method_operation = plugin._get_method_operation(handler)
 
         # Should include both explicit parameters and schema-derived parameters
+        params = method_operation["parameters"]
         assert len(params) > 1  # Header + schema fields
         assert params[0]["in"] == "header"
         assert params[0]["name"] == "X-Custom-Header"
@@ -337,9 +319,11 @@ class TestApigamiPlugin:
         )
 
         # Process responses
-        responses = plugin._process_responses(handler)
+        method_operation: dict[str, Any] = {}
+        plugin._process_responses(handler, method_operation)
 
         # Check responses format
+        responses = method_operation["responses"]
         assert "200" in responses
         assert "404" in responses
         assert "schema" in responses["200"]
@@ -368,7 +352,8 @@ class TestApigamiPlugin:
         )
 
         # Process extra options
-        options = ApigamiPlugin._process_extra_options(handler)
+        options: dict[str, Any] = {}
+        ApigamiPlugin._process_extra_options(handler, options)
 
         # Check options
         assert "tags" in options
