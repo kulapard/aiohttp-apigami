@@ -92,34 +92,7 @@ class ApigamiPlugin(MarshmallowPlugin):
         schema_name = self.converter.schema_name_resolver(schema_instance)
         add_to_refs = example.pop("add_to_refs", False)
 
-        # v2: Add example to schema if schema is in schemas
-        if self.openapi_version.major < 3:
-            if schema_name in self.spec.components.schemas:
-                self._add_example_to_schema(schema_name, parameters, example, add_to_refs)
-
-        # v3: Always add the example regardless of schema being in schemas
-        else:
-            self._add_example_to_schema(schema_name, parameters, example, add_to_refs)
-
-    def _add_example_to_schema(
-        self, schema_name: str, parameters: list[dict[str, Any]] | None, example: dict[str, Any], add_to_refs: bool
-    ) -> None:
-        """
-        Helper method to add example to schema.
-
-        Adds example data to either the schema definition (when add_to_refs is True)
-        or to the parameters list (when add_to_refs is False).
-
-        Args:
-            schema_name: The name of the schema to add the example to
-            parameters: List of parameter definitions where the example may be added
-            example: The example data to add
-            add_to_refs: If True, add example directly to schema definition;
-                         otherwise, add to parameters
-        """
-        assert self.spec is not None, "init_spec has not yet been called"
-
-        if add_to_refs and schema_name is not None:
+        if add_to_refs and schema_name in self.spec.components.schemas:
             self.spec.components.schemas[schema_name]["example"] = example
         elif parameters:
             # Get the reference path from $ref field

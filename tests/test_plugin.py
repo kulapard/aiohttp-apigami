@@ -406,3 +406,57 @@ class TestApigamiPlugin:
         assert "200" in operations["get"]["responses"]
         assert "schema" in operations["get"]["responses"]["200"]
         assert operations["get"]["responses"]["200"]["schema"] == response_schema
+
+    def test_add_example(self) -> None:
+        """Test adding examples to schemas."""
+        # Test for OpenAPI v2
+        plugin = ApigamiPlugin()
+
+        # Initialize with v2
+        spec = APISpec(
+            title="Test API",
+            version="1.0.0",
+            openapi_version="2.0",
+            plugins=[plugin],
+        )
+
+        schema = SampleSchema()
+        # Register schema with spec so it's in components
+        spec.components.schema("Sample", schema=schema)
+
+        # Test example without add_to_refs
+        example_data = {"id": 1, "name": "Test"}
+        parameters: list[dict[str, Any]] = [{"schema": {"$ref": "#/definitions/Sample"}}]
+        plugin._add_example(schema_instance=schema, example=example_data.copy(), parameters=parameters)
+
+        # Check example was added to parameters
+        assert "allOf" in parameters[0]["schema"]
+        assert parameters[0]["schema"]["allOf"][0]["$ref"] == "#/definitions/Sample"
+        assert parameters[0]["schema"]["example"] == example_data
+
+        # Test example with add_to_refs=True
+        example_with_refs = {"id": 2, "name": "Test2", "add_to_refs": True}
+        plugin._add_example(schema_instance=schema, example=example_with_refs.copy(), parameters=None)
+
+        # Check example was added to schema definition
+        assert "example" in spec.components.schemas["Sample"]
+        assert spec.components.schemas["Sample"]["example"] == {"id": 2, "name": "Test2"}
+
+        # Test for OpenAPI v3
+        plugin_v3 = ApigamiPlugin()
+        spec_v3 = APISpec(
+            title="Test API",
+            version="1.0.0",
+            openapi_version="3.0.0",
+            plugins=[plugin_v3],
+        )
+        assert spec_v3.plugins == [plugin_v3]
+
+        # Test with v3 - should add example even if schema not registered yet
+        example_v3 = {"id": 3, "name": "Test3", "add_to_refs": True}
+        plugin_v3._add_example(schema_instance=schema, example=example_v3.copy(), parameters=None)
+
+        # No examples added when example is None
+        parameters_no_example = [{"schema": {"$ref": "#/definitions/Sample"}}]
+        plugin._add_example(schema_instance=schema, example=None, parameters=parameters_no_example)
+        assert "example" not in parameters_no_example[0]["schema"]
