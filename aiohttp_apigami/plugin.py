@@ -127,14 +127,14 @@ class ApigamiPlugin(MarshmallowPlugin):
 
         schema_instance = schema["schema"]
 
-        # v2: body/json is a part of parameters
+        # OpenAPI v2: body/json is a part of parameters
         if self.openapi_version.major < 3:
             body_parameters = self.converter.schema2parameters(
                 schema=schema_instance, location=location, **schema["options"]
             )
             method_operation["parameters"].extend(body_parameters)
 
-        # v3: body/json is requestBody object
+        # OpenAPI v3: body/json is requestBody object
         else:
             body_parameters = None
             method_operation["requestBody"] = {
@@ -169,8 +169,8 @@ class ApigamiPlugin(MarshmallowPlugin):
         for schema in handler_spec["schemas"]:
             location = schema["location"]
             if location in _BODY_LOCATIONS:
-                # Single body parameter is located in different place for v2 and v3
-                # process it separately
+                # Body parameter is located in different place for v2 and v3
+                # Let's process it separately
                 self._process_body(schema=schema, method_operation=operation)
             else:
                 example = schema.get("example")
