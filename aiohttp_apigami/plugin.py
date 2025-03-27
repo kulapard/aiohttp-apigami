@@ -172,7 +172,7 @@ class ApigamiPlugin(MarshmallowPlugin):
         # Add example for all OpenAPI versions
         self._add_example(schema_instance=schema_instance, parameters=body_parameters, example=schema.get("example"))
 
-    def _get_method_operation(self, handler: HandlerType) -> dict[str, Any]:
+    def _get_method_operation(self, handler_spec: dict[str, Any]) -> dict[str, Any]:
         """
         Process request schemas for OpenAPI spec. Returns operation object.
 
@@ -181,17 +181,13 @@ class ApigamiPlugin(MarshmallowPlugin):
         according to OpenAPI spec version rules.
 
         Args:
-            handler: The request handler function with API spec metadata
+            handler_spec: The handler function's spec metadata containing schemas and parameters
 
         Returns:
             Dictionary with parameters and other operation components
         """
         assert self.converter is not None, "init_spec has not yet been called"
         assert self.openapi_version is not None, "init_spec has not yet been called"
-
-        handler_spec = getattr(handler, API_SPEC_ATTR, {})
-        if not handler_spec:
-            return {}
 
         # Set existing parameters
         operation: dict[str, Any] = {"parameters": copy.deepcopy(handler_spec["parameters"])}
@@ -214,7 +210,7 @@ class ApigamiPlugin(MarshmallowPlugin):
 
         return operation
 
-    def _process_responses(self, handler: HandlerType, method_operation: dict[str, Any]) -> None:
+    def _process_responses(self, handler_spec: dict[str, Any], method_operation: dict[str, Any]) -> None:
         """
         Process response schemas for OpenAPI spec.
 
@@ -223,13 +219,9 @@ class ApigamiPlugin(MarshmallowPlugin):
         Preserves additional response metadata like descriptions and headers.
 
         Args:
-            handler: The request handler function with API spec metadata
+            handler_spec: The handler function's spec metadata containing schemas and parameters
             method_operation: The operation object to update with response information
         """
-        handler_spec = getattr(handler, API_SPEC_ATTR, {})
-        if not handler_spec:
-            return None
-
         method_operation["responses"] = method_operation.get("responses", {})
 
         responses_data = handler_spec.get("responses", {})
@@ -250,7 +242,7 @@ class ApigamiPlugin(MarshmallowPlugin):
         method_operation["responses"].update(responses)
 
     @staticmethod
-    def _process_extra_options(handler: HandlerType, method_operation: dict[str, Any]) -> None:
+    def _process_extra_options(handler_spec: dict[str, Any], method_operation: dict[str, Any]) -> None:
         """
         Process extra options for OpenAPI spec.
 
@@ -258,13 +250,9 @@ class ApigamiPlugin(MarshmallowPlugin):
         specifically related to schemas, responses, or parameters.
 
         Args:
-            handler: The request handler function with API spec metadata
+            handler_spec: The handler function's spec metadata containing schemas and parameters
             method_operation: The operation object to update with additional options
         """
-        handler_spec = getattr(handler, API_SPEC_ATTR, {})
-        if not handler_spec:
-            return None
-
         for key, value in handler_spec.items():
             if key not in ("schemas", "responses", "parameters"):
                 method_operation[key] = value
@@ -332,22 +320,27 @@ class ApigamiPlugin(MarshmallowPlugin):
         assert method is not None, "Missing 'method' parameter"
         assert handler is not None, "Missing 'handler' parameter"
 
+        # Do nothing if is spec is not enabled
+        handler_spec = getattr(handler, API_SPEC_ATTR, {})
+        if not handler_spec:
+            return path
+
         # Check if method is valid for the current OpenAPI version
         valid_methods = VALID_METHODS[self.openapi_version.major]
         if method.lower() not in valid_methods:
             raise RuntimeError(f"Method {method!r} not supported by OpenAPI spec version {self.openapi_version}")
 
         # Build the method operation object
-        method_operation = self._get_method_operation(handler)
+        method_operation = self._get_method_operation(handler_spec)
 
         # Process path parameters
         self._process_path_parameters(path=path, method_operation=method_operation)
 
         # Process response schemas
-        self._process_responses(handler, method_operation)
+        self._process_responses(handler_spec, method_operation)
 
         # Process additional options (tags, summary, etc.)
-        self._process_extra_options(handler, method_operation)
+        self._process_extra_options(handler_spec, method_operation)
 
         # Add the operation to the operations dictionary
         operations[method.lower()] = method_operation

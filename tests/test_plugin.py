@@ -248,28 +248,20 @@ class TestApigamiPlugin:
         )
         assert spec.plugins == [plugin]
 
-        # Mock handler with API spec attribute
-        async def handler() -> web.StreamResponse:
-            return web.Response()
-
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "parameters": [{"in": "header", "name": "X-Custom-Header", "type": "string"}],
-                "schemas": [
-                    {
-                        "schema": SampleSchema(),
-                        "location": "querystring",
-                        "example": None,
-                        "options": {},
-                    }
-                ],
-            },
-        )
+        handler_spec = {
+            "parameters": [{"in": "header", "name": "X-Custom-Header", "type": "string"}],
+            "schemas": [
+                {
+                    "schema": SampleSchema(),
+                    "location": "querystring",
+                    "example": None,
+                    "options": {},
+                }
+            ],
+        }
 
         # Process parameters
-        method_operation = plugin._get_method_operation(handler)
+        method_operation = plugin._get_method_operation(handler_spec)
 
         # Should include both explicit parameters and schema-derived parameters
         params = method_operation["parameters"]
@@ -296,30 +288,22 @@ class TestApigamiPlugin:
         )
         assert spec.plugins == [plugin]
 
-        # Mock handler with API spec attribute
-        async def handler() -> web.StreamResponse:
-            return web.Response()
-
         schema = SampleResponseSchema()
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "responses": {
-                    "200": {
-                        "schema": schema,
-                        "description": "Successful response",
-                    },
-                    "404": {
-                        "description": "Not found",
-                    },
-                }
-            },
-        )
+        handler_spec = {
+            "responses": {
+                "200": {
+                    "schema": schema,
+                    "description": "Successful response",
+                },
+                "404": {
+                    "description": "Not found",
+                },
+            }
+        }
 
         # Process responses
         method_operation: dict[str, Any] = {}
-        plugin._process_responses(handler, method_operation)
+        plugin._process_responses(handler_spec, method_operation)
 
         # Check responses format
         responses = method_operation["responses"]
@@ -332,27 +316,18 @@ class TestApigamiPlugin:
 
     def test_process_extra_options(self) -> None:
         """Test processing of extra options."""
-
-        # Mock handler with API spec attribute
-        async def handler() -> web.StreamResponse:
-            return web.Response()
-
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "tags": ["test"],
-                "summary": "Test summary",
-                "description": "Test description",
-                "schemas": [],  # Should be ignored
-                "responses": {},  # Should be ignored
-                "parameters": [],  # Should be ignored
-            },
-        )
+        handler_spec = {
+            "tags": ["test"],
+            "summary": "Test summary",
+            "description": "Test description",
+            "schemas": [],  # Should be ignored
+            "responses": {},  # Should be ignored
+            "parameters": [],  # Should be ignored
+        }
 
         # Process extra options
         options: dict[str, Any] = {}
-        ApigamiPlugin._process_extra_options(handler, options)
+        ApigamiPlugin._process_extra_options(handler_spec, options)
 
         # Check options
         assert "tags" in options
