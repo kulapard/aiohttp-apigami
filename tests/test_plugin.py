@@ -7,7 +7,6 @@ from apispec.core import VALID_METHODS
 from marshmallow import Schema, fields
 
 from aiohttp_apigami.constants import API_SPEC_ATTR
-from aiohttp_apigami.data import RouteData
 from aiohttp_apigami.plugin import ApigamiPlugin
 
 
@@ -159,23 +158,18 @@ class TestApigamiPlugin:
         async def handler() -> web.StreamResponse:
             return web.Response()
 
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "schemas": [
-                    {
-                        "schema": SampleSchema(),
-                        "location": "json",
-                        "options": {},
-                    }
-                ]
-            },
-        )
+        schema_dict = {
+            "schema": SampleSchema(),
+            "location": "json",
+            "options": {},
+        }
 
-        # For v2, body should be empty (body is part of parameters)
-        body = plugin._process_body(handler)
-        assert body == {}
+        # For v2, body should be included in parameters
+        method_operation: dict[str, Any] = {}
+        plugin._process_body(schema_dict, method_operation)
+        assert method_operation["parameters"] == [
+            {"in": "body", "name": "body", "required": False, "schema": {"$ref": "#/definitions/Sample"}}
+        ]
 
     def test_process_body_v3(self) -> None:
         """Test body processing for OpenAPI v3."""
@@ -196,28 +190,21 @@ class TestApigamiPlugin:
             return web.Response()
 
         schema = SampleSchema()
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "schemas": [
-                    {
-                        "schema": schema,
-                        "location": "json",
-                        "options": {"required": True},
-                    }
-                ]
-            },
-        )
+        schema_dict = {
+            "schema": schema,
+            "location": "json",
+            "options": {"required": True},
+        }
 
         # For v3, body should be formatted as a requestBody
-        body = plugin._process_body(handler)
-        assert "requestBody" in body
-        assert "content" in body["requestBody"]
-        assert "application/json" in body["requestBody"]["content"]
-        assert "schema" in body["requestBody"]["content"]["application/json"]
-        assert body["requestBody"]["content"]["application/json"]["schema"] == schema
-        assert body["requestBody"]["required"] is True
+        method_operation: dict[str, Any] = {}
+        plugin._process_body(schema_dict, method_operation)
+        assert "requestBody" in method_operation
+        assert method_operation["parameters"] == []
+        assert method_operation["requestBody"] == {
+            "content": {"application/json": {"schema": schema}},
+            "required": True,
+        }
 
     def test_process_body_v3_no_body(self) -> None:
         """Test body processing for OpenAPI v3 without body schema."""
@@ -236,23 +223,16 @@ class TestApigamiPlugin:
         async def handler() -> web.StreamResponse:
             return web.Response()
 
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "schemas": [
-                    {
-                        "schema": SampleSchema(),
-                        "location": "querystring",
-                        "options": {},
-                    }
-                ]
-            },
-        )
+        schema_dict = {
+            "schema": SampleSchema(),
+            "location": "querystring",
+            "options": {},
+        }
 
         # No body schema, should return empty dict
-        body = plugin._process_body(handler)
-        assert body == {}
+        method_operation: dict[str, Any] = {}
+        plugin._process_body(schema_dict, method_operation)
+        assert "requestBody" not in method_operation
 
     def test_process_parameters(self) -> None:
         """Test parameters processing."""
@@ -268,30 +248,23 @@ class TestApigamiPlugin:
         )
         assert spec.plugins == [plugin]
 
-        # Mock handler with API spec attribute
-        async def handler() -> web.StreamResponse:
-            return web.Response()
-
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "parameters": [{"in": "header", "name": "X-Custom-Header", "type": "string"}],
-                "schemas": [
-                    {
-                        "schema": SampleSchema(),
-                        "location": "querystring",
-                        "example": None,
-                        "options": {},
-                    }
-                ],
-            },
-        )
+        handler_spec = {
+            "parameters": [{"in": "header", "name": "X-Custom-Header", "type": "string"}],
+            "schemas": [
+                {
+                    "schema": SampleSchema(),
+                    "location": "querystring",
+                    "example": None,
+                    "options": {},
+                }
+            ],
+        }
 
         # Process parameters
-        params = plugin._process_parameters(handler)
+        method_operation = plugin._get_method_operation(handler_spec)
 
         # Should include both explicit parameters and schema-derived parameters
+        params = method_operation["parameters"]
         assert len(params) > 1  # Header + schema fields
         assert params[0]["in"] == "header"
         assert params[0]["name"] == "X-Custom-Header"
@@ -315,31 +288,25 @@ class TestApigamiPlugin:
         )
         assert spec.plugins == [plugin]
 
-        # Mock handler with API spec attribute
-        async def handler() -> web.StreamResponse:
-            return web.Response()
-
         schema = SampleResponseSchema()
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "responses": {
-                    "200": {
-                        "schema": schema,
-                        "description": "Successful response",
-                    },
-                    "404": {
-                        "description": "Not found",
-                    },
-                }
-            },
-        )
+        handler_spec = {
+            "responses": {
+                "200": {
+                    "schema": schema,
+                    "description": "Successful response",
+                },
+                "404": {
+                    "description": "Not found",
+                },
+            }
+        }
 
         # Process responses
-        responses = plugin._process_responses(handler)
+        method_operation: dict[str, Any] = {}
+        plugin._process_responses(handler_spec, method_operation)
 
         # Check responses format
+        responses = method_operation["responses"]
         assert "200" in responses
         assert "404" in responses
         assert "schema" in responses["200"]
@@ -349,26 +316,18 @@ class TestApigamiPlugin:
 
     def test_process_extra_options(self) -> None:
         """Test processing of extra options."""
-
-        # Mock handler with API spec attribute
-        async def handler() -> web.StreamResponse:
-            return web.Response()
-
-        setattr(
-            handler,
-            API_SPEC_ATTR,
-            {
-                "tags": ["test"],
-                "summary": "Test summary",
-                "description": "Test description",
-                "schemas": [],  # Should be ignored
-                "responses": {},  # Should be ignored
-                "parameters": [],  # Should be ignored
-            },
-        )
+        handler_spec = {
+            "tags": ["test"],
+            "summary": "Test summary",
+            "description": "Test description",
+            "schemas": [],  # Should be ignored
+            "responses": {},  # Should be ignored
+            "parameters": [],  # Should be ignored
+        }
 
         # Process extra options
-        options = ApigamiPlugin._process_extra_options(handler)
+        options: dict[str, Any] = {}
+        ApigamiPlugin._process_extra_options(handler_spec, options)
 
         # Check options
         assert "tags" in options
@@ -422,13 +381,12 @@ class TestApigamiPlugin:
             },
         )
 
-        # Create route data
-        route = RouteData(method="get", path="/test/{test_id}", handler=handler)
-
         # Call path helper
         operations: dict[str, Any] = {}
         parameters: list[dict[str, Any]] = []
-        path = plugin.path_helper(path=None, operations=operations, parameters=parameters, route=route)
+        path = plugin.path_helper(
+            path="/test/{test_id}", method="get", handler=handler, operations=operations, parameters=parameters
+        )
 
         # Check results
         assert path == "/test/{test_id}"
@@ -448,3 +406,57 @@ class TestApigamiPlugin:
         assert "200" in operations["get"]["responses"]
         assert "schema" in operations["get"]["responses"]["200"]
         assert operations["get"]["responses"]["200"]["schema"] == response_schema
+
+    def test_add_example(self) -> None:
+        """Test adding examples to schemas."""
+        # Test for OpenAPI v2
+        plugin = ApigamiPlugin()
+
+        # Initialize with v2
+        spec = APISpec(
+            title="Test API",
+            version="1.0.0",
+            openapi_version="2.0",
+            plugins=[plugin],
+        )
+
+        schema = SampleSchema()
+        # Register schema with spec so it's in components
+        spec.components.schema("Sample", schema=schema)
+
+        # Test example without add_to_refs
+        example_data = {"id": 1, "name": "Test"}
+        parameters: list[dict[str, Any]] = [{"schema": {"$ref": "#/definitions/Sample"}}]
+        plugin._add_example(schema_instance=schema, example=example_data.copy(), parameters=parameters)
+
+        # Check example was added to parameters
+        assert "allOf" in parameters[0]["schema"]
+        assert parameters[0]["schema"]["allOf"][0]["$ref"] == "#/definitions/Sample"
+        assert parameters[0]["schema"]["example"] == example_data
+
+        # Test example with add_to_refs=True
+        example_with_refs = {"id": 2, "name": "Test2", "add_to_refs": True}
+        plugin._add_example(schema_instance=schema, example=example_with_refs.copy(), parameters=None)
+
+        # Check example was added to schema definition
+        assert "example" in spec.components.schemas["Sample"]
+        assert spec.components.schemas["Sample"]["example"] == {"id": 2, "name": "Test2"}
+
+        # Test for OpenAPI v3
+        plugin_v3 = ApigamiPlugin()
+        spec_v3 = APISpec(
+            title="Test API",
+            version="1.0.0",
+            openapi_version="3.0.0",
+            plugins=[plugin_v3],
+        )
+        assert spec_v3.plugins == [plugin_v3]
+
+        # Test with v3 - should add example even if schema not registered yet
+        example_v3 = {"id": 3, "name": "Test3", "add_to_refs": True}
+        plugin_v3._add_example(schema_instance=schema, example=example_v3.copy(), parameters=None)
+
+        # No examples added when example is None
+        parameters_no_example = [{"schema": {"$ref": "#/definitions/Sample"}}]
+        plugin._add_example(schema_instance=schema, example=None, parameters=parameters_no_example)
+        assert "example" not in parameters_no_example[0]["schema"]
