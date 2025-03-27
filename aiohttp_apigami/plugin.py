@@ -97,9 +97,6 @@ class ApigamiPlugin(MarshmallowPlugin):
         elif parameters:
             # Get the reference path from $ref field
             ref_path = parameters[0]["schema"].pop("$ref")
-            # Ensure there's no duplication of #/definitions/
-            if "#/definitions/#/definitions/" in ref_path:
-                ref_path = ref_path.replace("#/definitions/#/definitions/", "#/definitions/")
             parameters[0]["schema"]["allOf"] = [{"$ref": ref_path}]
             parameters[0]["schema"]["example"] = example
 
