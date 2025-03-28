@@ -12,21 +12,21 @@ coverage:
 flags:
   library:
     paths:
-    - aiohttp_apigami/
+      - aiohttp_apigami/
   configs:
     paths:
-    - ".git*"
-    - "*.toml"
-    - "*.yml"
+      - ".git*"
+      - "*.toml"
+      - "*.yml"
   docs:
     paths:
-    - docs/
-    - "*.md"
-    - "*.rst"
-    - "*.txt"
+      - docs/
+      - "*.md"
+      - "*.rst"
+      - "*.txt"
   tests:
     paths:
-    - tests/
+      - tests/
   tools:
     paths:
-    - tools/
+      - tools/
