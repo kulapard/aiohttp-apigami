@@ -292,8 +292,8 @@ async def test_middleware_multiple_schemas_without_put_into(
     # Create handler with both schemas at different locations but no put_into
     # Note: In our decorators, the schemas are ordered from bottom to top when applied
     # So querystring schema (applied first) is processed first in the middleware
-    @request_schema(RequestSchema(), location="json")  # Second schema to be applied
-    @request_schema(RequestSchema(), location="querystring")  # First schema to be applied
+    @request_schema(RequestSchema, location="json")  # Second schema to be applied
+    @request_schema(RequestSchema, location="querystring")  # First schema to be applied
     async def test_handler(request: web.Request) -> web.Response:
         # The middleware will use the first valid schema it processes (querystring)
         data = request["data"]
