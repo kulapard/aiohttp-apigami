@@ -9,6 +9,10 @@ deps:
 test:
 	uv run pytest
 
+cov-dev:
+	@uv run pytest --cov-report=html
+	@open -n "file://`pwd`/htmlcov/index.html"
+
 build:
 	uv build --verbose
 
