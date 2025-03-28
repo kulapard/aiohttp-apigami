@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 
 import pytest
@@ -25,9 +26,22 @@ from tests.fixtures.schemas import (
 )
 
 
+@dataclass
+class BasicHandlers:
+    """Container for basic handler functions."""
+
+    get: Handler
+    post: Handler
+    post_with_example_to_endpoint: Handler
+    post_with_example_to_ref: Handler
+    post_partial: Handler
+    post_callable_schema: Handler
+    other: Handler
+
+
 @pytest.fixture
-def basic_handlers(example_for_request_schema: dict[str, Any]) -> dict[str, Handler]:
-    """Return a dictionary of basic handler functions."""
+def basic_handlers(example_for_request_schema: dict[str, Any]) -> BasicHandlers:
+    """Return a dataclass of basic handler functions."""
 
     @docs(
         tags=["mytag"],
@@ -63,19 +77,27 @@ def basic_handlers(example_for_request_schema: dict[str, Any]) -> dict[str, Hand
     async def other(request: web.Request) -> web.Response:
         return web.Response()
 
-    return {
-        "handler_get": handler_get,
-        "handler_post": handler_post,
-        "handler_post_with_example_to_endpoint": handler_post_with_example_to_endpoint,
-        "handler_post_with_example_to_ref": handler_post_with_example_to_ref,
-        "handler_post_partial": handler_post_partial,
-        "handler_post_callable_schema": handler_post_callable_schema,
-        "other": other,
-    }
+    return BasicHandlers(
+        get=handler_get,
+        post=handler_post,
+        post_with_example_to_endpoint=handler_post_with_example_to_endpoint,
+        post_with_example_to_ref=handler_post_with_example_to_ref,
+        post_partial=handler_post_partial,
+        post_callable_schema=handler_post_callable_schema,
+        other=other,
+    )
+
+
+@dataclass
+class EchoHandlers:
+    """Container for echo handler functions."""
+
+    post: Handler
+    get: Handler
 
 
 @pytest.fixture
-def echo_handlers() -> dict[str, Handler]:
+def echo_handlers() -> EchoHandlers:
     """Return handlers that echo back the data they receive."""
 
     @request_schema(RequestSchema)
@@ -86,10 +108,10 @@ def echo_handlers() -> dict[str, Handler]:
     async def handler_get_echo(request: web.Request) -> web.Response:
         return web.json_response(request["data"])
 
-    return {
-        "handler_post_echo": handler_post_echo,
-        "handler_get_echo": handler_get_echo,
-    }
+    return EchoHandlers(
+        post=handler_post_echo,
+        get=handler_get_echo,
+    )
 
 
 @pytest.fixture

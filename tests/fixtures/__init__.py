@@ -3,6 +3,8 @@ from .examples import (
     example_for_request_schema,
 )
 from .handlers import (
+    BasicHandlers,
+    EchoHandlers,
     basic_handlers,
     class_based_view,
     dataclass_handler,
@@ -28,7 +30,9 @@ from .schemas import (
 )
 
 __all__ = [
+    "BasicHandlers",
     "CookiesSchema",
+    "EchoHandlers",
     "HeaderSchema",
     "MatchInfoSchema",
     "MyException",
