@@ -21,7 +21,6 @@ flags:
   docs:
     paths:
     - docs/
-    - example/
     - "*.md"
     - "*.rst"
     - "*.txt"
