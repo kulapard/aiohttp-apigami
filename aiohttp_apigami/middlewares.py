@@ -1,18 +1,17 @@
 import logging.config
-from typing import Any
-from typing import cast
+from typing import Any, cast
 
 from aiohttp import web
 from aiohttp.typedefs import Handler
 
-from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME
-from .constants import SCHEMAS_ATTR
+from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, SCHEMAS_ATTR
 from .utils import is_class_based_view
 from .validation import ValidationSchema
 
 logger = logging.getLogger(__name__)
 
 _missing: Any = object()
+
 
 def _get_handler_schemas(request: web.Request) -> list[ValidationSchema] | None:
     """
