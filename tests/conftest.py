@@ -1,286 +1,109 @@
-from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
-from typing import Any
+"""Pytest configuration file."""
+# ruff: noqa: F401, F403
 
 import pytest
 from aiohttp import web
-from aiohttp.pytest_plugin import AiohttpClient
 from aiohttp.test_utils import TestClient
-from marshmallow import EXCLUDE, Schema, fields
+from aiohttp.typedefs import Handler, Middleware
+from pytest_aiohttp.plugin import AiohttpClient
 
-from aiohttp_apigami import (
-    cookies_schema,
-    docs,
-    headers_schema,
-    json_schema,
-    match_info_schema,
-    querystring_schema,
-    request_schema,
-    response_schema,
-    setup_aiohttp_apispec,
-    validation_middleware,
-)
+from aiohttp_apigami import setup_aiohttp_apispec, validation_middleware
+from aiohttp_apigami.typedefs import ErrorHandler
+
+# Import all fixtures - fixture modules import our handler classes
+from tests.fixtures import *
+from tests.fixtures.handlers import BasicHandlers, EchoHandlers
 
 
-class HeaderSchema(Schema):
-    class Meta:
-        unknown = EXCLUDE
-
-    some_header = fields.String()
-
-
-class MatchInfoSchema(Schema):
-    uuid = fields.Integer()
-
-
-class CookiesSchema(Schema):
-    some_cookie = fields.String()
-
-
-class MyNestedSchema(Schema):
-    i = fields.Int()
-
-
-class RequestSchema(Schema):
-    id = fields.Int()
-    name = fields.Str(metadata={"description": "name"})
-    bool_field = fields.Bool()
-    list_field = fields.List(fields.Int())
-    nested_field = fields.Nested(MyNestedSchema)
-
-
-class ResponseSchema(Schema):
-    msg = fields.Str()
-    data = fields.Dict()
-
-
-@dataclass
-class NestedDataclass:
-    i: int
-
-
-@dataclass
-class RequestDataclass:
-    id: int
-    name: str
-    bool_field: bool
-    list_field: list[int]
-    nested_field: NestedDataclass | None = None
-
-
-@dataclass
-class ResponseDataclass:
-    msg: str
-    data: dict[str, Any] = field(default_factory=dict)
-
-
-class MyException(Exception):
-    def __init__(self, message: dict[str, Any]) -> None:
-        self.message = message
+@pytest.fixture(params=[True, False])
+def nested_param(request: pytest.FixtureRequest) -> bool:
+    """Parametrize tests to run with both nested and flat app structures."""
+    return bool(request.param)
 
 
 @pytest.fixture
-def example_for_request_schema() -> dict[str, Any]:
-    return {
-        "id": 1,
-        "name": "test",
-        "bool_field": True,
-        "list_field": [1, 2, 3],
-        "nested_field": {"i": 12},
-    }
-
-
-@pytest.fixture
-def example_for_request_dataclass() -> dict[str, Any]:
-    return {
-        "id": 2,
-        "name": "dataclass_test",
-        "bool_field": True,
-        "list_field": [4, 5, 6],
-        "nested_field": {"i": 42},
-    }
-
-
-@pytest.fixture(
-    # since multiple locations are no longer supported
-    # in a single call, location should always expect string
-    params=[
-        ({"location": "querystring"}, True),
-        ({"location": "querystring"}, False),
-    ]
-)
-async def aiohttp_app(  # noqa: C901
+async def aiohttp_app(
     aiohttp_client: AiohttpClient,
-    request: pytest.FixtureRequest,
-    example_for_request_schema: dict[str, Any],
-) -> TestClient:  # type: ignore[type-arg] # for mypy + older aiohttp versions
-    location, nested = request.param
-
-    @docs(
-        tags=["mytag"],
-        summary="Test method summary",
-        description="Test method description",
-        responses={404: {"description": "Not Found"}},
-    )
-    @request_schema(RequestSchema, **location)
-    @response_schema(ResponseSchema, 200, description="Success response")
-    async def handler_get(request: web.Request) -> web.Response:
-        return web.json_response({"msg": "done", "data": {}})
-
-    @docs(
-        tags=["dataclass"],
-        summary="Test dataclass handler",
-        description="Test handler using dataclasses",
-    )
-    @request_schema(RequestDataclass, location="json")
-    @response_schema(ResponseDataclass, 200, description="Success response with dataclass")
-    async def handler_dataclass(request: web.Request) -> web.Response:
-        # Access data as a dataclass instance
-        data: RequestDataclass = request["data"]
-        return web.json_response(
-            {"msg": "done", "data": {"id": data.id, "name": data.name, "is_active": data.bool_field}}
-        )
-
-    @request_schema(RequestSchema)
-    async def handler_post(request: web.Request) -> web.Response:
-        return web.json_response({"msg": "done", "data": {}})
-
-    @request_schema(RequestSchema, example=example_for_request_schema)
-    async def handler_post_with_example_to_endpoint(request: web.Request) -> web.Response:
-        return web.json_response({"msg": "done", "data": {}})
-
-    @request_schema(RequestSchema, example=example_for_request_schema, add_to_refs=True)
-    async def handler_post_with_example_to_ref(request: web.Request) -> web.Response:
-        return web.json_response({"msg": "done", "data": {}})
-
-    @request_schema(RequestSchema(partial=True))
-    async def handler_post_partial(request: web.Request) -> web.Response:
-        return web.json_response({"msg": "done", "data": {}})
-
-    @request_schema(RequestSchema())
-    async def handler_post_callable_schema(request: web.Request) -> web.Response:
-        return web.json_response({"msg": "done", "data": {}})
-
-    @request_schema(RequestSchema)
-    async def handler_post_echo(request: web.Request) -> web.Response:
-        return web.json_response(request["data"])
-
-    @request_schema(RequestSchema, **location)
-    async def handler_get_echo(request: web.Request) -> web.Response:
-        return web.json_response(request["data"])
-
-    @docs(
-        parameters=[
-            {
-                "in": "path",
-                "name": "var",
-                "schema": {"type": "string", "format": "uuid"},
-            }
-        ]
-    )
-    async def handler_get_variable(request: web.Request) -> web.Response:
-        return web.json_response(request["data"])
-
-    class ViewClass(web.View):
-        @docs(
-            tags=["mytag"],
-            summary="View method summary",
-            description="View method description",
-        )
-        @request_schema(RequestSchema, **location)
-        async def get(self) -> web.Response:
-            return web.json_response(self.request["data"])
-
-        async def delete(self) -> web.Response:
-            return web.json_response({"hello": "world"})
-
-    async def other(request: web.Request) -> web.Response:
-        return web.Response()
-
-    def my_error_handler(
-        error: Any, req: web.Request, schema: Schema, *args: Any, error_status_code: int, error_headers: dict[str, str]
-    ) -> None:
-        raise MyException({"errors": error.messages, "text": "Oops"})
-
-    @web.middleware
-    async def intercept_error(
-        request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
-    ) -> web.StreamResponse:
-        try:
-            return await handler(request)
-        except MyException as e:
-            return web.json_response(e.message, status=400)
-
-    @match_info_schema(MatchInfoSchema)
-    @querystring_schema(RequestSchema)
-    @json_schema(RequestSchema)
-    @headers_schema(HeaderSchema)
-    @cookies_schema(CookiesSchema)
-    async def validated_view(request: web.Request) -> web.Response:
-        return web.json_response(
-            {
-                "json": request["json"],
-                "headers": request["headers"],
-                "cookies": request["cookies"],
-                "match_info": request["match_info"],
-                "querystring": request["querystring"],
-            }
-        )
-
+    basic_handlers: BasicHandlers,
+    echo_handlers: EchoHandlers,
+    variable_handler: Handler,
+    validated_view: Handler,
+    dataclass_handler: Handler,
+    class_based_view: type[web.View],
+    error_handler: ErrorHandler,
+    nested_param: bool,
+    error_middleware: Middleware,
+) -> TestClient[web.Request, web.Application]:
+    """Return a client for a basic application with all handlers."""
     app = web.Application()
-    if nested:
+
+    if nested_param:
+        # Create a nested app structure with a v1 subapp
         v1 = web.Application()
+
+        # Set up API docs in the v1 subapp
         setup_aiohttp_apispec(
             app=v1,
             title="API documentation",
             version="0.0.1",
             url="/api/docs/api-docs",
             swagger_path="/api/docs",
-            error_callback=my_error_handler,
+            error_callback=error_handler,
         )
+
+        # Add middlewares to the v1 subapp
+        v1.middlewares.extend([error_middleware, validation_middleware])
+
+        # Add routes to the v1 subapp
         v1.router.add_routes(
             [
-                web.get("/test", handler_get),
-                web.post("/test", handler_post),
-                web.post("/example_endpoint", handler_post_with_example_to_endpoint),
-                web.post("/example_ref", handler_post_with_example_to_ref),
-                web.post("/test_partial", handler_post_partial),
-                web.post("/test_call", handler_post_callable_schema),
-                web.get("/other", other),
-                web.get("/echo", handler_get_echo),
-                web.view("/class_echo", ViewClass),
-                web.post("/echo", handler_post_echo),
-                web.get("/variable/{var}", handler_get_variable),
+                web.get("/test", basic_handlers.get),
+                web.post("/test", basic_handlers.post),
+                web.post("/example_endpoint", basic_handlers.post_with_example_to_endpoint),
+                web.post("/example_ref", basic_handlers.post_with_example_to_ref),
+                web.post("/test_partial", basic_handlers.post_partial),
+                web.post("/test_call", basic_handlers.post_callable_schema),
+                web.get("/other", basic_handlers.other),
+                web.get("/echo", echo_handlers.get),
+                web.view("/class_echo", class_based_view),
+                web.post("/echo", echo_handlers.post),
+                web.get("/variable/{var}", variable_handler),
                 web.post("/validate/{uuid}", validated_view),
-                web.post("/dataclass", handler_dataclass),
+                web.post("/dataclass", dataclass_handler),
             ]
         )
-        v1.middlewares.extend([intercept_error, validation_middleware])
+
+        # Add the v1 subapp to the main app
         app.add_subapp("/v1/", v1)
     else:
+        # Set up API docs in the main app
         setup_aiohttp_apispec(
             app=app,
             url="/v1/api/docs/api-docs",
             swagger_path="/v1/api/docs",
-            error_callback=my_error_handler,
+            error_callback=error_handler,
         )
+
+        # Add middlewares to the main app
+        app.middlewares.extend([error_middleware, validation_middleware])
+
+        # Add routes to the main app
         app.router.add_routes(
             [
-                web.get("/v1/test", handler_get),
-                web.post("/v1/test", handler_post),
-                web.post("/v1/example_endpoint", handler_post_with_example_to_endpoint),
-                web.post("/v1/example_ref", handler_post_with_example_to_ref),
-                web.post("/v1/test_partial", handler_post_partial),
-                web.post("/v1/test_call", handler_post_callable_schema),
-                web.get("/v1/other", other),
-                web.get("/v1/echo", handler_get_echo),
-                web.view("/v1/class_echo", ViewClass),
-                web.post("/v1/echo", handler_post_echo),
-                web.get("/v1/variable/{var}", handler_get_variable),
+                web.get("/v1/test", basic_handlers.get),
+                web.post("/v1/test", basic_handlers.post),
+                web.post("/v1/example_endpoint", basic_handlers.post_with_example_to_endpoint),
+                web.post("/v1/example_ref", basic_handlers.post_with_example_to_ref),
+                web.post("/v1/test_partial", basic_handlers.post_partial),
+                web.post("/v1/test_call", basic_handlers.post_callable_schema),
+                web.get("/v1/other", basic_handlers.other),
+                web.get("/v1/echo", echo_handlers.get),
+                web.view("/v1/class_echo", class_based_view),
+                web.post("/v1/echo", echo_handlers.post),
+                web.get("/v1/variable/{var}", variable_handler),
                 web.post("/v1/validate/{uuid}", validated_view),
-                web.post("/v1/dataclass", handler_dataclass),
+                web.post("/v1/dataclass", dataclass_handler),
             ]
         )
-        app.middlewares.extend([intercept_error, validation_middleware])
 
     return await aiohttp_client(app)

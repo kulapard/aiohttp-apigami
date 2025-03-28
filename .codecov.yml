@@ -1,0 +1,32 @@
+codecov:
+  branch: master
+  notify:
+    after_n_builds: 4
+
+coverage:
+  range: "95..100"
+
+  status:
+    project: no
+
+flags:
+  library:
+    paths:
+      - aiohttp_apigami/
+  configs:
+    paths:
+      - ".git*"
+      - "*.toml"
+      - "*.yml"
+  docs:
+    paths:
+      - docs/
+      - "*.md"
+      - "*.rst"
+      - "*.txt"
+  tests:
+    paths:
+      - tests/
+  tools:
+    paths:
+      - tools/
