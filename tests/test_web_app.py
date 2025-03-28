@@ -1,6 +1,12 @@
+import logging
 from typing import Any
 
 import pytest
+from aiohttp import web
+from pytest_aiohttp.plugin import AiohttpClient
+
+from aiohttp_apigami import request_schema, setup_aiohttp_apispec, validation_middleware
+from tests.fixtures import RequestSchema
 
 pytestmark = pytest.mark.asyncio
 
@@ -276,3 +282,82 @@ async def test_dataclass_in_swagger_docs(aiohttp_app: Any) -> None:
     assert "definitions" in swagger_json
     assert "RequestDataclass" in swagger_json["definitions"]
     assert "ResponseDataclass" in swagger_json["definitions"]
+
+
+async def test_middleware_multiple_schemas_without_put_into(
+    aiohttp_client: AiohttpClient, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Test that middleware uses only the first schema when multiple schemas without put_into are provided."""
+
+    # Create handler with both schemas at different locations but no put_into
+    # Note: In our decorators, the schemas are ordered from bottom to top when applied
+    # So querystring schema (applied first) is processed first in the middleware
+    @request_schema(RequestSchema, location="json")  # Second schema to be applied
+    @request_schema(RequestSchema, location="querystring")  # First schema to be applied
+    async def test_handler(request: web.Request) -> web.Response:
+        # The middleware will use the first valid schema it processes (querystring)
+        data = request["data"]
+        return web.json_response({"result": data})
+
+    # Create app with the middleware and proper setup
+    app = web.Application()
+
+    # Set up API spec before adding the middleware
+    setup_aiohttp_apispec(
+        app=app,
+        title="Test API",
+        version="0.0.1",
+    )
+
+    # Add middleware after setting up apispec
+    app.middlewares.append(validation_middleware)
+    app.router.add_post("/test", test_handler)
+
+    # Create test client
+    client = await aiohttp_client(app)
+
+    # Set caplog level to capture all logs
+    caplog.set_level(logging.ERROR)
+
+    # Test with different values in JSON vs querystring
+    json_data = {"id": 1, "name": "json_name"}
+    query_data = [("id", "2"), ("name", "query_name")]
+
+    # Send request with both JSON and querystring data
+    resp = await client.post("/test", json=json_data, params=query_data)
+
+    # Verify success response
+    assert resp.status == 200
+    result = await resp.json()
+
+    # Check that only the first processed schema's data was used
+    # First schema applied was querystring schema, so it should use id=2
+    assert result["result"]["id"] == 2
+    assert result["result"]["name"] == "query_name"
+
+    # Verify the warning was logged about multiple schemas
+    assert "Multiple schemas provided, but no put_into specified. Using the first one only." in caplog.text
+
+
+async def test_middleware_with_class_based_view(aiohttp_app: Any) -> None:
+    """Test that the middleware correctly gets schemas from class-based views."""
+
+    # Test GET with querystring params (class_based_view uses querystring location)
+    query_data = [("id", "42"), ("name", "class_view_test"), ("bool_field", "true"), ("list_field", "1")]
+    get_resp = await aiohttp_app.get("/v1/class_echo", params=query_data)
+
+    # Verify GET success and data validation
+    assert get_resp.status == 200
+    get_result = await get_resp.json()
+    assert get_result["id"] == 42
+    assert get_result["name"] == "class_view_test"
+    assert get_result["bool_field"] is True
+    assert get_result["list_field"] == [1]
+
+    # Test DELETE which has no schema
+    delete_resp = await aiohttp_app.delete("/v1/class_echo")
+
+    # Verify DELETE success without schema validation
+    assert delete_resp.status == 200
+    delete_result = await delete_resp.json()
+    assert delete_result == {"hello": "world"}

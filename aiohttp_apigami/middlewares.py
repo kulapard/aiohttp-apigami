@@ -1,3 +1,4 @@
+import logging.config
 from typing import Any, cast
 
 from aiohttp import web
@@ -6,6 +7,10 @@ from aiohttp.typedefs import Handler
 from .constants import APISPEC_PARSER, APISPEC_VALIDATED_DATA_NAME, SCHEMAS_ATTR
 from .utils import is_class_based_view
 from .validation import ValidationSchema
+
+logger = logging.getLogger(__name__)
+
+_missing: Any = object()
 
 
 def _get_handler_schemas(request: web.Request) -> list[ValidationSchema] | None:
@@ -57,7 +62,7 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
         # Skip validation if no schemas are found
         return await handler(request)
 
-    result = []
+    result = _missing
     for sch in schemas:
         # Parse and validate request data using the schema
         data = await _get_validated_data(request, sch)
@@ -67,16 +72,13 @@ async def validation_middleware(request: web.Request, handler: Handler) -> web.S
             request[sch.put_into] = data
 
         # Otherwise, store the validated data in the default key
-        elif data:
-            try:
-                # TODO: refactor to avoid mixing data from different schemas
-                if isinstance(data, list):
-                    result.extend(data)
-                else:
-                    result = data
-            except (ValueError, TypeError):
-                result = data
-                break
+        elif data and result is _missing:
+            result = data
+        else:
+            logger.error("Multiple schemas provided, but no put_into specified. Using the first one only.")
+
+    # For backward compatibility, if no validated data is provided, use the list
+    result = [] if result is _missing else result
 
     # Store validated data in request object
     request[request.app[APISPEC_VALIDATED_DATA_NAME]] = result

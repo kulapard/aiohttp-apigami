@@ -64,7 +64,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           flags: >-
-            CI-GHA,Py-${{
+            Py-${{
               matrix.python-version
             }}
           token: ${{ secrets.CODECOV_TOKEN }}
