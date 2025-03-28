@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from typing import Any
 from unittest.mock import patch
 
@@ -9,26 +8,7 @@ from marshmallow import Schema
 
 from aiohttp_apigami import docs, request_schema, response_schema
 from aiohttp_apigami.validation import ValidationSchema
-
-
-@dataclass
-class NestedDataclass:
-    i: int
-
-
-@dataclass
-class RequestDataclass:
-    id: int
-    name: str
-    bool_field: bool
-    list_field: list[int]
-    nested_field: NestedDataclass | None = None
-
-
-@dataclass
-class ResponseDataclass:
-    msg: str
-    data: dict[str, Any] = field(default_factory=dict)
+from tests.fixtures import RequestDataclass, ResponseDataclass
 
 
 @pytest.fixture
