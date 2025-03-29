@@ -5,6 +5,7 @@
 /lib
 /__pycache__
 .coverage
+.codebuddy/
 .pypirc
 .pytest_cache
 /docs/build
