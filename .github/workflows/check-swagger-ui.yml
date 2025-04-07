@@ -47,7 +47,7 @@ jobs:
       - name: Run pre-commit
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
         run: |
-          uv run pre-commit run --all-files
+          uv run pre-commit run --all-files || true
         continue-on-error: true
 
       - name: Create Pull Request
