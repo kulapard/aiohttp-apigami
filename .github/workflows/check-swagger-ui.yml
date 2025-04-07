@@ -24,7 +24,7 @@ jobs:
           cache-dependency-glob: "pyproject.toml"
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --all-extras
 
       - name: Get current version of Swagger UI
         id: current_version
