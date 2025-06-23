@@ -1,5 +1,5 @@
 """Pytest configuration file."""
-# ruff: noqa: F401, F403
+# ruff: noqa: F403
 
 import pytest
 from aiohttp import web
