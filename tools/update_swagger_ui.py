@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: T201
 """
 Script to update the Swagger UI files to the latest version.
 
