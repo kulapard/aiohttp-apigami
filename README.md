@@ -24,7 +24,7 @@ Think of **aiohttp-apigami** as the bridge between your aiohttp web services and
 - **Decorator-driven API**: Simple `@docs` and `@request_schema` decorators add Swagger/OpenAPI support to your existing code
 - **Granular Request Validation**: Specialized decorators for headers, query params, JSON body, etc.
 - **Middleware Integration**: Easy validation with `validation_middleware`
-- **Built-in Swagger UI**: Ready-to-use interactive documentation (currently <!-- SWAGGER_UI_VERSION_START -->[v5.25.2](https://github.com/swagger-api/swagger-ui/releases/tag/v5.25.2)<!-- SWAGGER_UI_VERSION_END -->)
+- **Built-in Swagger UI**: Ready-to-use interactive documentation (currently <!-- SWAGGER_UI_VERSION_START -->[v5.26.2](https://github.com/swagger-api/swagger-ui/releases/tag/v5.26.2)<!-- SWAGGER_UI_VERSION_END -->)
 - **Class-Based View Support**: Fully compatible with aiohttp's CBV pattern
 - **Dataclass Support**: Use Python dataclasses directly as schemas for cleaner code
 
@@ -360,7 +360,7 @@ Then navigate to `/docs` in your browser to see the interactive API documentatio
 
 ## 🔄 Updating Swagger UI
 
-This package includes Swagger UI <!-- SWAGGER_UI_VERSION_START -->[v5.25.2](https://github.com/swagger-api/swagger-ui/releases/tag/v5.25.2)<!-- SWAGGER_UI_VERSION_END -->.
+This package includes Swagger UI <!-- SWAGGER_UI_VERSION_START -->[v5.26.2](https://github.com/swagger-api/swagger-ui/releases/tag/v5.26.2)<!-- SWAGGER_UI_VERSION_END -->.
 Updates are managed through:
 
 1. **Automated Checks**: A weekly GitHub workflow checks for new Swagger UI versions and creates PRs
