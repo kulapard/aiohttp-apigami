@@ -44,7 +44,7 @@ dev = [
     "mypy",
     "pip",
     "pre-commit",
-    "pytest",
+    "pytest<9.0.0",
     "pytest-aiohttp",
     "pytest-cov",
     "pytest-sugar",
