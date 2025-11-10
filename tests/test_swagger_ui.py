@@ -1,10 +1,7 @@
-from unittest.mock import mock_open, patch
-
 import pytest
 from aiohttp import web
 
 from aiohttp_apigami.swagger_ui import (
-    INDEX_PAGE,
     NAME_SWAGGER_SPEC,
     NAME_SWAGGER_STATIC,
     SWAGGER_UI_STATIC_FILES,
@@ -39,29 +36,23 @@ def test_index_page_caching(swagger_app: web.Application) -> None:
     # Initialize the manager
     manager = SwaggerUIManager(url=TEST_SWAGGER_URL, static_path=TEST_STATIC_PATH)
 
-    # Mock content with placeholders for substitution
-    mock_content = "layout=${layout}\npath=${path}\nstatic=${static}"
-    mock_file = mock_open(read_data=mock_content)
+    # Verify the cache is empty initially
+    assert manager._index_page is None
 
-    with patch("builtins.open", mock_file):
-        # First call should read from file
-        first_result = manager._get_index_page(swagger_app, SWAGGER_UI_STATIC_FILES)
+    # First call should read from file and cache the result
+    first_result = manager._get_index_page(swagger_app, SWAGGER_UI_STATIC_FILES)
 
-        # Verify file was read correctly
-        mock_file.assert_called_once_with(str(SWAGGER_UI_STATIC_FILES / INDEX_PAGE))
+    # Verify the result was cached
+    assert manager._index_page is not None
+    assert manager._index_page == first_result
 
-        # Reset the mock to verify it's not called again
-        mock_file.reset_mock()
+    # Second call should use cached value
+    second_result = manager._get_index_page(swagger_app, SWAGGER_UI_STATIC_FILES)
 
-        # Second call should use cached value
-        second_result = manager._get_index_page(swagger_app, SWAGGER_UI_STATIC_FILES)
+    # Results should be identical (cached value used)
+    assert first_result == second_result
+    assert first_result is second_result  # Same object reference (cached)
 
-        # Verify the file was not read again (caching works)
-        mock_file.assert_not_called()
-
-        # Results should be identical (cached value used)
-        assert first_result == second_result
-
-        # Verify content substitution
-        assert LayoutOption.Standalone.value in first_result
-        assert TEST_SWAGGER_URL in first_result
+    # Verify content substitution
+    assert LayoutOption.Standalone.value in first_result
+    assert TEST_SWAGGER_URL in first_result
