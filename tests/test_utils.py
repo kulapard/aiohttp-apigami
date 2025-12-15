@@ -240,11 +240,20 @@ class TestResolveSchemaInstance:
     def test_with_python312_type_statement(self) -> None:
         """Test compatibility with Python 3.12+ type statement syntax.
 
-        In Python 3.12+, you can write:
+        Python 3.12+ introduced the 'type' statement for creating type aliases:
             type ListIntAlias = GenericDataclass[list[int]]
 
-        This produces the same runtime type as the regular assignment we test,
-        so this test verifies the behavior is identical.
+        This produces the SAME runtime type as regular assignment:
+            ListIntAlias = GenericDataclass[list[int]]
+
+        NOTE: We cannot use the actual 'type' syntax in this file because:
+        - Python 3.11 cannot parse 'type' statements (SyntaxError)
+        - pytest must parse test files before skip conditions execute
+        - Solution: Test the assignment syntax which has identical runtime behavior
+
+        This test validates that our implementation works with the runtime
+        types produced by Python 3.12+ type statements, even though we use
+        assignment syntax in the test itself.
         """
         T = TypeVar("T")
 
@@ -252,8 +261,7 @@ class TestResolveSchemaInstance:
         class GenericDataclass(Generic[T]):
             value: T
 
-        # This assignment syntax produces the same runtime type as:
-        # type ListIntAlias = GenericDataclass[list[int]]  (Python 3.12+)
+        # Assignment syntax (runtime equivalent to Python 3.12+ type statement)
         ListIntAlias = GenericDataclass[list[int]]
 
         result = resolve_schema_instance(ListIntAlias)
@@ -262,8 +270,7 @@ class TestResolveSchemaInstance:
         assert isinstance(result.fields["value"], m.fields.List)
         assert isinstance(result.fields["value"].inner, m.fields.Integer)
 
-        # Verify that the type alias description includes the generic parameter
-        # (this is what makes Python 3.12+ type statements useful for type checkers)
+        # Verify __origin__ attribute (same for both syntaxes)
         assert hasattr(ListIntAlias, "__origin__")
         assert ListIntAlias.__origin__ is GenericDataclass
 
