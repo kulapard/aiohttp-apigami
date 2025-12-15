@@ -52,7 +52,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.current_version.outputs.version != steps.updated_version.outputs.version
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           sign-commits: true
           commit-message: "Update Swagger UI to ${{ steps.updated_version.outputs.version }}"
