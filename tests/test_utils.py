@@ -235,6 +235,36 @@ class TestResolveSchemaInstance:
         # Note: marshmallow-recipe doesn't populate key_field and value_field for dict type hints
         # The Dict field is created but without specific type constraints for keys/values
 
+    def test_with_nested_custom_dataclass(self) -> None:
+        """Test with nested custom dataclass (e.g., GenericDataclass[list[MyValue]])."""
+        T = TypeVar("T")
+
+        @dataclass
+        class MyValue:
+            name: str
+            count: int
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            items: T
+
+        # Test with list of custom dataclass
+        ListMyValueAlias = GenericDataclass[list[MyValue]]
+        result = resolve_schema_instance(ListMyValueAlias)
+        assert isinstance(result, m.Schema)
+        assert "items" in result.fields
+        assert isinstance(result.fields["items"], m.fields.List)
+        # Verify the inner type is a Nested field for the MyValue dataclass
+        assert isinstance(result.fields["items"].inner, m.fields.Nested)
+        # Verify the nested schema has the expected fields
+        nested_schema = result.fields["items"].inner.schema
+        if isinstance(nested_schema, type):
+            nested_schema = nested_schema()
+        assert "name" in nested_schema.fields
+        assert "count" in nested_schema.fields
+        assert isinstance(nested_schema.fields["name"], m.fields.String)
+        assert isinstance(nested_schema.fields["count"], m.fields.Integer)
+
     @patch("aiohttp_apigami.utils.mr", None)
     def test_with_generic_alias_no_marshmallow_recipe(self) -> None:
         """Test with a generic type alias but without marshmallow-recipe."""
