@@ -1,7 +1,7 @@
 from dataclasses import is_dataclass
 from inspect import isclass
 from string import Formatter
-from typing import Any, TypeVar, get_origin
+from typing import Any, Type, TypeVar, get_origin
 
 import marshmallow as m
 from aiohttp import web
@@ -62,7 +62,7 @@ def get_or_set_schemas(func: T) -> list[ValidationSchema]:
     return func_schemas
 
 
-def resolve_schema_instance(schema: SchemaType | type[TDataclass]) -> m.Schema:
+def resolve_schema_instance(schema: SchemaType | Type[TDataclass]) -> m.Schema:
     if isinstance(schema, type) and issubclass(schema, m.Schema):
         return schema()
     if isinstance(schema, m.Schema):
