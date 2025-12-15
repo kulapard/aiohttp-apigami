@@ -44,7 +44,7 @@ pip install aiohttp-apigami
 
 ### Requirements
 
-- Python 3.10+
+- Python 3.11+
 - aiohttp 3.10+
 - apispec 5.0+
 - webargs 8.0+
