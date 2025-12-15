@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import cast
+from typing import Generic, TypeVar, cast
 from unittest.mock import Mock, patch
 
 import marshmallow as m
@@ -134,20 +134,18 @@ class TestResolveSchemaInstance:
         result = resolve_schema_instance(schema_instance)
         assert result is schema_instance
 
-    @patch("aiohttp_apigami.utils.mr")
-    def test_with_dataclass(self, mock_mr: Mock) -> None:
+    def test_with_dataclass(self) -> None:
         """Test with a dataclass."""
 
         @dataclass
         class TestDataclass:
             field: str
 
-        mock_schema = Mock(spec=m.Schema)
-        mock_mr.schema.return_value = mock_schema
-
         result = resolve_schema_instance(TestDataclass)
-        assert result is mock_schema
-        mock_mr.schema.assert_called_once_with(TestDataclass)
+        assert isinstance(result, m.Schema)
+        # Verify the schema has the expected field with correct type
+        assert "field" in result.fields
+        assert isinstance(result.fields["field"], m.fields.String)
 
     @patch("aiohttp_apigami.utils.mr", None)
     def test_with_dataclass_no_marshmallow_recipe(self) -> None:
@@ -159,6 +157,97 @@ class TestResolveSchemaInstance:
 
         with pytest.raises(RuntimeError, match="marshmallow-recipe is required for dataclass support"):
             resolve_schema_instance(TestDataclass)
+
+    def test_with_generic_dataclass_alias(self) -> None:
+        """Test with a generic type alias of a dataclass (e.g., MyClass = MyBaseClass[int])."""
+        T = TypeVar("T")
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            value: T
+
+        # Create a type alias with a concrete type parameter
+        ConcreteAlias = GenericDataclass[int]
+
+        result = resolve_schema_instance(ConcreteAlias)
+        assert isinstance(result, m.Schema)
+        # Verify the schema has the expected field with correct type
+        assert "value" in result.fields
+        assert isinstance(result.fields["value"], m.fields.Integer)
+
+    def test_with_direct_generic_usage(self) -> None:
+        """Test with direct generic usage (e.g., MyBaseClass[str])."""
+        T = TypeVar("T")
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            value: T
+
+        # Use the generic directly with a type parameter
+        result = resolve_schema_instance(GenericDataclass[str])
+        assert isinstance(result, m.Schema)
+        assert "value" in result.fields
+        assert isinstance(result.fields["value"], m.fields.String)
+
+    def test_with_multiple_type_parameters(self) -> None:
+        """Test with a generic dataclass that has multiple type parameters."""
+        T = TypeVar("T")
+        U = TypeVar("U")
+
+        @dataclass
+        class MultiGenericDataclass(Generic[T, U]):
+            first: T
+            second: U
+
+        MultiAlias = MultiGenericDataclass[int, str]
+
+        result = resolve_schema_instance(MultiAlias)
+        assert isinstance(result, m.Schema)
+        assert "first" in result.fields
+        assert "second" in result.fields
+        # Verify field types match the generic parameters
+        assert isinstance(result.fields["first"], m.fields.Integer)
+        assert isinstance(result.fields["second"], m.fields.String)
+
+    def test_with_nested_generic_types(self) -> None:
+        """Test with nested generic types (e.g., GenericDataclass[list[int]])."""
+        T = TypeVar("T")
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            items: T
+
+        # Test with list of integers
+        ListIntAlias = GenericDataclass[list[int]]
+        result = resolve_schema_instance(ListIntAlias)
+        assert isinstance(result, m.Schema)
+        assert "items" in result.fields
+        assert isinstance(result.fields["items"], m.fields.List)
+        # Verify the inner type of the list is Integer
+        assert isinstance(result.fields["items"].inner, m.fields.Integer)
+
+        # Test with dict
+        DictAlias = GenericDataclass[dict[str, int]]
+        result = resolve_schema_instance(DictAlias)
+        assert isinstance(result, m.Schema)
+        assert "items" in result.fields
+        assert isinstance(result.fields["items"], m.fields.Dict)
+        # Note: marshmallow-recipe doesn't populate key_field and value_field for dict type hints
+        # The Dict field is created but without specific type constraints for keys/values
+
+    @patch("aiohttp_apigami.utils.mr", None)
+    def test_with_generic_alias_no_marshmallow_recipe(self) -> None:
+        """Test with a generic type alias but without marshmallow-recipe."""
+        T = TypeVar("T")
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            field: T
+
+        GenericAlias = GenericDataclass[str]
+
+        with pytest.raises(RuntimeError, match="marshmallow-recipe is required for dataclass support"):
+            resolve_schema_instance(GenericAlias)
 
     def test_with_invalid_schema(self) -> None:
         """Test with an invalid schema type."""
