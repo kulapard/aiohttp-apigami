@@ -43,7 +43,7 @@ dev = [
     "mypy",
     "pip",
     "pre-commit",
-    "pytest<9.0.0",
+    "pytest",
     "pytest-aiohttp",
     "pytest-cov",
     "pytest-sugar",
@@ -81,7 +81,9 @@ docstring-code-line-length = 60
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "--cov=aiohttp_apigami --cov-branch --cov-report term:skip-covered"
+addopts = """
+    --cov=aiohttp_apigami
+"""
 
 [tool.codespell]
 skip = '.git,*.pdf,*.svg,Makefile,.venv,_build,aiohttp_apigami/swagger_ui/*'
@@ -90,6 +92,7 @@ skip = '.git,*.pdf,*.svg,Makefile,.venv,_build,aiohttp_apigami/swagger_ui/*'
 branch = true
 
 [tool.coverage.report]
+skip_covered = true
 # Regexes for lines to exclude from consideration
 exclude_also = [
     # Don't complain about missing debug-only code:
