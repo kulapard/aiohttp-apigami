@@ -1,3 +1,4 @@
+import sys
 from dataclasses import dataclass
 from typing import Generic, TypeVar, cast
 from unittest.mock import Mock, patch
@@ -234,6 +235,37 @@ class TestResolveSchemaInstance:
         assert isinstance(result.fields["items"], m.fields.Dict)
         # Note: marshmallow-recipe doesn't populate key_field and value_field for dict type hints
         # The Dict field is created but without specific type constraints for keys/values
+
+    @pytest.mark.skipif(sys.version_info < (3, 12), reason="type statement requires Python 3.12+")
+    def test_with_python312_type_statement(self) -> None:
+        """Test compatibility with Python 3.12+ type statement syntax.
+
+        In Python 3.12+, you can write:
+            type ListIntAlias = GenericDataclass[list[int]]
+
+        This produces the same runtime type as the regular assignment we test,
+        so this test verifies the behavior is identical.
+        """
+        T = TypeVar("T")
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            value: T
+
+        # This assignment syntax produces the same runtime type as:
+        # type ListIntAlias = GenericDataclass[list[int]]  (Python 3.12+)
+        ListIntAlias = GenericDataclass[list[int]]
+
+        result = resolve_schema_instance(ListIntAlias)
+        assert isinstance(result, m.Schema)
+        assert "value" in result.fields
+        assert isinstance(result.fields["value"], m.fields.List)
+        assert isinstance(result.fields["value"].inner, m.fields.Integer)
+
+        # Verify that the type alias description includes the generic parameter
+        # (this is what makes Python 3.12+ type statements useful for type checkers)
+        assert hasattr(ListIntAlias, "__origin__")
+        assert ListIntAlias.__origin__ is GenericDataclass
 
     @patch("aiohttp_apigami.utils.mr", None)
     def test_with_generic_alias_no_marshmallow_recipe(self) -> None:
