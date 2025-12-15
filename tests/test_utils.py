@@ -223,6 +223,8 @@ class TestResolveSchemaInstance:
         assert isinstance(result, m.Schema)
         assert "items" in result.fields
         assert isinstance(result.fields["items"], m.fields.List)
+        # Verify the inner type of the list is Integer
+        assert isinstance(result.fields["items"].inner, m.fields.Integer)
 
         # Test with dict
         DictAlias = GenericDataclass[dict[str, int]]
@@ -230,6 +232,7 @@ class TestResolveSchemaInstance:
         assert isinstance(result, m.Schema)
         assert "items" in result.fields
         assert isinstance(result.fields["items"], m.fields.Dict)
+        # Dict fields don't have inner type validation in marshmallow by default
 
     @patch("aiohttp_apigami.utils.mr", None)
     def test_with_generic_alias_no_marshmallow_recipe(self) -> None:
