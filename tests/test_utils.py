@@ -232,7 +232,8 @@ class TestResolveSchemaInstance:
         assert isinstance(result, m.Schema)
         assert "items" in result.fields
         assert isinstance(result.fields["items"], m.fields.Dict)
-        # Dict fields don't have inner type validation in marshmallow by default
+        # Note: marshmallow-recipe doesn't populate key_field and value_field for dict type hints
+        # The Dict field is created but without specific type constraints for keys/values
 
     @patch("aiohttp_apigami.utils.mr", None)
     def test_with_generic_alias_no_marshmallow_recipe(self) -> None:
