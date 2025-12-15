@@ -34,7 +34,7 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dataclass = [
-    "marshmallow-recipe>=0.0.39,<1.0.0"
+    "marshmallow-recipe>=0.0.65,<1.0.0"
 ]
 
 [dependency-groups]
