@@ -1,7 +1,7 @@
 from dataclasses import is_dataclass
 from inspect import isclass
 from string import Formatter
-from typing import Any, TypeVar
+from typing import Any, TypeVar, get_origin
 
 import marshmallow as m
 from aiohttp import web
@@ -67,7 +67,12 @@ def resolve_schema_instance(schema: SchemaType | type[TDataclass]) -> m.Schema:
         return schema()
     if isinstance(schema, m.Schema):
         return schema
-    if is_dataclass(schema):
+
+    # Check if schema is a dataclass or a generic alias of a dataclass
+    # For generic aliases like MyClass = MyBaseClass[InnerType], get_origin() returns MyBaseClass
+    schema_to_check = get_origin(schema) if get_origin(schema) is not None else schema
+
+    if is_dataclass(schema_to_check):
         if mr is None:
             raise RuntimeError(
                 "marshmallow-recipe is required for dataclass support. "
