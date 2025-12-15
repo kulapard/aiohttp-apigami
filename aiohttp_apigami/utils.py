@@ -70,7 +70,8 @@ def resolve_schema_instance(schema: SchemaType | Type[TDataclass]) -> m.Schema:
 
     # Check if schema is a dataclass or a generic alias of a dataclass
     # For generic aliases like MyClass = MyBaseClass[InnerType], get_origin() returns MyBaseClass
-    schema_to_check = get_origin(schema) if get_origin(schema) is not None else schema
+    # Type: Union of origin type (from get_origin) or the schema itself
+    schema_to_check: Any = get_origin(schema) if get_origin(schema) is not None else schema
 
     if is_dataclass(schema_to_check):
         if mr is None:
