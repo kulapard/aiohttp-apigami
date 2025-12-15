@@ -293,6 +293,64 @@ or with pip:
 pip install aiohttp-apigami[dataclass]
 ```
 
+### Generic Dataclasses
+
+You can use generic dataclasses with type parameters to create reusable, type-safe response wrappers:
+
+```python
+from dataclasses import dataclass
+from typing import Generic, TypeVar
+from aiohttp import web
+from aiohttp_apigami import docs, response_schema
+
+T = TypeVar('T')
+
+@dataclass
+class ApiResponse(Generic[T]):
+    success: bool
+    message: str
+    data: T
+
+# Create type-specific aliases
+IntResponse = ApiResponse[int]
+UserResponse = ApiResponse[dict]
+ListResponse = ApiResponse[list[str]]
+
+@docs(tags=["users"], summary="Get user count")
+@response_schema(IntResponse, 200)  # Use the type alias
+async def get_count(request: web.Request):
+    return web.json_response({
+        "success": True,
+        "message": "User count retrieved",
+        "data": 42
+    })
+
+@docs(tags=["users"], summary="Get user details")
+@response_schema(UserResponse, 200)  # Different type parameter
+async def get_user(request: web.Request):
+    return web.json_response({
+        "success": True,
+        "message": "User retrieved",
+        "data": {"id": 1, "name": "John"}
+    })
+
+# You can also use generics directly without aliases
+@docs(tags=["items"], summary="Get item list")
+@response_schema(ApiResponse[list[str]], 200)  # Direct generic usage
+async def get_items(request: web.Request):
+    return web.json_response({
+        "success": True,
+        "message": "Items retrieved",
+        "data": ["item1", "item2", "item3"]
+    })
+```
+
+This pattern is particularly useful for:
+- **Consistent API responses**: Wrap all responses in a common structure
+- **Type safety**: Get proper type checking for response data
+- **Code reusability**: Define the wrapper once, use with different data types
+- **Better documentation**: Generic types are properly reflected in OpenAPI/Swagger docs
+
 ## 🛡️ Custom Error Handling
 
 Create custom validation error handlers with the `error_callback` parameter:
