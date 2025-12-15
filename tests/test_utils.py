@@ -209,6 +209,28 @@ class TestResolveSchemaInstance:
         assert isinstance(result.fields["first"], m.fields.Integer)
         assert isinstance(result.fields["second"], m.fields.String)
 
+    def test_with_nested_generic_types(self) -> None:
+        """Test with nested generic types (e.g., GenericDataclass[list[int]])."""
+        T = TypeVar("T")
+
+        @dataclass
+        class GenericDataclass(Generic[T]):
+            items: T
+
+        # Test with list of integers
+        ListIntAlias = GenericDataclass[list[int]]
+        result = resolve_schema_instance(ListIntAlias)
+        assert isinstance(result, m.Schema)
+        assert "items" in result.fields
+        assert isinstance(result.fields["items"], m.fields.List)
+
+        # Test with dict
+        DictAlias = GenericDataclass[dict[str, int]]
+        result = resolve_schema_instance(DictAlias)
+        assert isinstance(result, m.Schema)
+        assert "items" in result.fields
+        assert isinstance(result.fields["items"], m.fields.Dict)
+
     @patch("aiohttp_apigami.utils.mr", None)
     def test_with_generic_alias_no_marshmallow_recipe(self) -> None:
         """Test with a generic type alias but without marshmallow-recipe."""
